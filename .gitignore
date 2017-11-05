@@ -1,0 +1,12 @@
+.gradle
+.project
+.settings
+.classpath
+.idea
+
+bin
+build
+modules
+
+-- config file contains secrets
+client.json

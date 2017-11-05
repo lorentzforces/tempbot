@@ -1,0 +1,39 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = "fyi.lorentz.tempBot.Bot"
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ["src"]
+        }
+        resources {
+            srcDirs = ["resources"]
+
+        }
+    }
+    test {
+        java {
+            srcDirs = ["test"]
+        }
+    }
+}
+
+repositories {
+    jcenter()
+    maven {
+        url "https://jitpack.io"
+    }
+}
+
+dependencies {
+    compile 'com.github.austinv11:Discord4J:2.9.2'
+    compile 'org.json:json:20171018'
+}
+
+jar {
+    manifest {
+        attributes "Main-Class": "fyi.lorentz.tempBot.Bot"
+    }
+}
