@@ -1,6 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'application'
 
+// this var for application plugin run task
 mainClassName = "fyi.lorentz.tempBot.Bot"
 
 sourceSets {
@@ -8,14 +9,10 @@ sourceSets {
         java {
             srcDirs = ["src"]
         }
-        resources {
-            srcDirs = ["resources"]
-
-        }
     }
     test {
         java {
-            srcDirs = ["test"]
+            srcDirs = ["test", "src"]
         }
     }
 }
@@ -28,12 +25,13 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.austinv11:Discord4J:2.9.2'
-    compile 'org.json:json:20171018'
+    compile "com.github.austinv11:Discord4J:2.9.2"
+    compile "org.json:json:20171018"
+    testCompile "junit:junit-dep:4.11"
 }
 
 jar {
     manifest {
-        attributes "Main-Class": "fyi.lorentz.tempBot.Bot"
+        attributes "Main-Class": mainClassName
     }
 }

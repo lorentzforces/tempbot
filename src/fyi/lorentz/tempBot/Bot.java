@@ -15,14 +15,16 @@ import java.util.EnumSet;
 
 public class Bot {
 
-    private static final String CONFIG_FILENAME = "config.json";
+    private static final String CONFIG_FILENAME = "client.json";
 
     public static void
     main(String[] args) {
         try {
             ClientConfig clientConfig = loadClientConfig();
 
-            System.out.println("Authorization Link: " + getAuthorizationLink(clientConfig.clientId));
+            System.out.println(
+                    "Authorization Link: "
+                    + getAuthorizationLink(clientConfig.clientId));
 
             IDiscordClient botClient =
                     new ClientBuilder()
@@ -44,7 +46,7 @@ public class Bot {
         }
     }
 
-    static String
+    private static String
     getAuthorizationLink(String clientId) {
         String baseUrl = "https://discordapp.com/api/oauth2/authorize?";
         StringBuilder authUrl = new StringBuilder(baseUrl);
