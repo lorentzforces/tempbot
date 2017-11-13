@@ -22,11 +22,12 @@ public class TemperatureProcessor {
     processMessage() {
         String[] temperatureStrings = getTemperatureStrings();
         Temperature[] temperatures = convertTemperatures(temperatureStrings);
+        String firstTemp = getTemperatureOrder(text);
 
         StringBuilder output = new StringBuilder(temperatureStrings.length * 30);
         if(temperatures.length > 0) {
             for (int i = 0; i < temperatures.length; i++) {
-                formatTemperature(output, temperatures[i]);
+                formatTemperature(output, temperatures[i], firstTemp);
                 if (i < temperatures.length - 1) {
                     output.append("\n");
                 }
@@ -48,18 +49,14 @@ public class TemperatureProcessor {
     }
 
     private void
-    formatTemperature(StringBuilder buffer, Temperature temp) {
+    formatTemperature(StringBuilder buffer, Temperature temp, String firstTemp) {
         DecimalFormat format = new DecimalFormat("###,###,###,###.###");
 
-        buffer.append("**")
-                .append(format.format(temp.getCelsius()))
-                .append("\u00b0C")
-                .append("**")
-                .append(" = ")
-                .append("**")
-                .append(format.format(temp.getFahrenheit()))
-                .append("\u00b0F")
-                .append("**");
+        if (firstTemp.equals("C")) {
+            handleStringFormatting(buffer, temp.getCelsius(), temp.getFahrenheit());
+        } else {
+            handleStringFormatting(buffer, temp.getFahrenheit(), temp.getCelsius());
+        }
     }
 
     public String[]
@@ -80,6 +77,28 @@ public class TemperatureProcessor {
 
         String[] stringArray = new String[0];
         return tempStrings.toArray(stringArray);
+    }
+
+    private String
+    getTemperatureOrder(String inputText) {
+        if (inputText.indexOf('c') || inputText.indexOf('C') >= 0) {
+            return "C"
+        } else {
+            return "F"
+        }
+    }
+
+    private void
+    handleStringFormatting(StringBuilder buffer, double firstTemp, double secondTemp) {
+        buffer.append("**")
+              .append(format.format(firstTemp))
+              .append("\u00b0C")
+              .append("**")
+              .append(" = ")
+              .append("**")
+              .append(format.format(secondTemp))
+              .append("\u00b0F")
+              .append("**");
     }
 
 }
