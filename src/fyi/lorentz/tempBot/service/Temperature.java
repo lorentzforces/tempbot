@@ -1,5 +1,7 @@
 package fyi.lorentz.tempBot.service;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -8,8 +10,10 @@ public class Temperature {
     private static final String TEMPERATURE_FORMAT = "([+-]?(?:[0-9]*\\.[0-9]+|[0-9]+))[ ]?([fFcC])";
     private static final Pattern TEMPERATURE_PATTERN = Pattern.compile(TEMPERATURE_FORMAT);
 
-    private double celsius;
-    private double fahrenheit;
+    private Map<String, Double> unitValues;
+
+    private String initialUnit;
+    private String convertedUnit;
 
     public
     Temperature(String rawTemp) {
@@ -18,51 +22,54 @@ public class Temperature {
         }
 
         double value;
-        char unit;
         Matcher matcher = TEMPERATURE_PATTERN.matcher(rawTemp.trim());
         if (matcher.matches()) {
             value = Double.parseDouble(matcher.group(1));
-            unit = matcher.group(2).charAt(0);
+            initialUnit = matcher.group(2).toUpperCase();
+            convertedUnit = "C".equals(initialUnit) ? "F" : "C";
         }
         else {
             throw new IllegalArgumentException("Bad temperature format from \"" + rawTemp + "\"");
         }
 
-        switch (Character.toUpperCase(unit)) {
-            case 'C': {
-                celsius = value;
-                fahrenheit = convertCelsiusToFahrenheit(value);
+        unitValues = new HashMap<>();
+        unitValues.put(initialUnit, value);
+        unitValues.put(
+                convertedUnit,
+                convertToUnit(convertedUnit, unitValues.get(initialUnit)) );
+    }
+
+    private double
+    convertToUnit(String unit, double value) {
+        double result = Double.NaN;
+
+        switch(unit) {
+            case "C": {
+                result = (value - 32) * (5.0 / 9.0);
                 break;
             }
-            case 'F': {
-                fahrenheit = value;
-                celsius = convertFahrenheitToCelsius(value);
+            case "F": {
+                result =  value * (9.0 / 5.0) + 32;
                 break;
-            }
-            default: {
-                throw new IllegalStateException("Fell through all cases for unit type");
             }
         }
-    }
 
-    private double
-    convertFahrenheitToCelsius(double value) {
-        return (value - 32) * (5.0 / 9.0);
-    }
-
-    private double
-    convertCelsiusToFahrenheit(double value) {
-        return value * (9.0 / 5.0) + 32;
+        return result;
     }
 
     public double
-    getCelsius() {
-        return celsius;
+    getUnitValue(String unit) {
+        return unitValues.get(unit);
     }
 
-    public double
-    getFahrenheit() {
-        return fahrenheit;
+    public String
+    getInitialUnit() {
+        return initialUnit;
+    }
+
+    public String
+    getConvertedUnit() {
+        return convertedUnit;
     }
 
 }

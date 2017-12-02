@@ -51,14 +51,16 @@ public class TemperatureProcessor {
     formatTemperature(StringBuilder buffer, Temperature temp) {
         DecimalFormat format = new DecimalFormat("###,###,###,###.###");
 
+        String initialUnit = temp.getInitialUnit();
+        String convertedUnit = temp.getConvertedUnit();
         buffer.append("**")
-                .append(format.format(temp.getCelsius()))
-                .append("\u00b0C")
-                .append("**")
-                .append(" = ")
-                .append("**")
-                .append(format.format(temp.getFahrenheit()))
-                .append("\u00b0F")
+                .append(format.format(temp.getUnitValue(initialUnit)))
+                .append("\u00b0")
+                .append(initialUnit)
+                .append("** = **")
+                .append(format.format(temp.getUnitValue(convertedUnit)))
+                .append("\u00b0")
+                .append(convertedUnit)
                 .append("**");
     }
 
