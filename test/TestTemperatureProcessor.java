@@ -81,4 +81,19 @@ public class TestTemperatureProcessor {
 
         assertEquals(expected, output);
     }
+
+    @Test
+    public void
+    duplicatesShouldBeIgnored() {
+        String inputString = "32F -40C 32f";
+        String expected =
+                "**32\u00b0F** = **0\u00b0C**\n" +
+                "**-40\u00b0C** = **-40\u00b0F**";
+        TemperatureProcessor testObject = new TemperatureProcessor(inputString);
+
+        String output = testObject.processMessage();
+
+        assertEquals(expected, output);
+    }
+
 }

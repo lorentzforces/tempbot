@@ -2,6 +2,7 @@ package fyi.lorentz.tempBot.service;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,30 +39,41 @@ public class TemperatureProcessor {
 
     private Temperature[]
     convertTemperatures(String[] temperatureStrings) {
-        Temperature[] result = new Temperature[temperatureStrings.length];
+        HashSet<String> processedTemps = new HashSet<>();
+        ArrayList<Temperature> resultList = new ArrayList<>();
 
-        for(int i = 0; i < temperatureStrings.length; i++) {
-            result[i] = new Temperature(temperatureStrings[i]);
+        for (String temperatureString: temperatureStrings) {
+            Temperature currentTemp = new Temperature(temperatureString);
+            String valueString = formatTemperatureValue(currentTemp, currentTemp.getInitialUnit());
+
+            if(!processedTemps.contains(valueString)) {
+                processedTemps.add(valueString);
+                resultList.add(currentTemp);
+            }
         }
 
+        Temperature[] result = new Temperature[resultList.size()];
+        resultList.toArray(result);
         return result;
     }
 
     private void
     formatTemperature(StringBuilder buffer, Temperature temp) {
-        DecimalFormat format = new DecimalFormat("###,###,###,###.###");
-
         String initialUnit = temp.getInitialUnit();
         String convertedUnit = temp.getConvertedUnit();
         buffer.append("**")
-                .append(format.format(temp.getUnitValue(initialUnit)))
-                .append("\u00b0")
-                .append(initialUnit)
+                .append(formatTemperatureValue(temp, initialUnit))
                 .append("** = **")
-                .append(format.format(temp.getUnitValue(convertedUnit)))
-                .append("\u00b0")
-                .append(convertedUnit)
+                .append(formatTemperatureValue(temp, convertedUnit))
                 .append("**");
+    }
+
+    private String
+    formatTemperatureValue(Temperature temp, String unit) {
+        String actualUnit = unit.toUpperCase();
+        DecimalFormat format = new DecimalFormat("###,###,###,###.###");
+
+        return format.format(temp.getUnitValue(actualUnit)) + "\u00b0" + actualUnit;
     }
 
     public String[]
