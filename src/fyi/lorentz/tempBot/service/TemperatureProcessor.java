@@ -46,7 +46,8 @@ public class TemperatureProcessor {
             Temperature currentTemp = new Temperature(temperatureString);
             String valueString = formatTemperatureValue(currentTemp, currentTemp.getInitialUnit());
 
-            if(!processedTemps.contains(valueString)) {
+            if(!processedTemps.contains(valueString) &&
+                    currentTemp.getUnitValue("C") >= -273.15d) {
                 processedTemps.add(valueString);
                 resultList.add(currentTemp);
             }

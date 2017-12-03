@@ -96,4 +96,15 @@ public class TestTemperatureProcessor {
         assertEquals(expected, output);
     }
 
+    @Test
+    public void
+    belowAbsoluteZeroShouldBeIgnored() {
+        String inputString = "-400C";
+        String expected = "";
+        TemperatureProcessor testObject = new TemperatureProcessor(inputString);
+
+        String output = testObject.processMessage();
+
+        assertEquals(expected, output);
+    }
 }
