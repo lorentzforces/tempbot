@@ -59,7 +59,11 @@ public class Temperature {
 
     public double
     getUnitValue(String unit) {
-        return unitValues.get(unit);
+        Double result = unitValues.get(unit);
+        if (result == null) {
+            throw new NullPointerException("Incorrect unit specified for retrieval");
+        }
+        return result;
     }
 
     public String
