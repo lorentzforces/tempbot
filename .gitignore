@@ -11,3 +11,6 @@ tempBot.jar
 
 -- config file contains secrets
 client.json
+
+-- log file
+tempbot.log

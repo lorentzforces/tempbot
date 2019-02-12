@@ -1,5 +1,8 @@
 package fyi.lorentz.tempBot;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,6 +17,8 @@ import java.nio.file.Path;
 import java.util.EnumSet;
 
 public class Bot {
+
+    private static final Logger logger = LogManager.getLogger();
 
     private static final String CONFIG_FILENAME = "client.json";
 
@@ -35,14 +40,12 @@ public class Bot {
             botClient.login();
         }
         catch (IOException e) {
-            // TODO: add proper logging
-            System.out.println("Error reading client configuration client.json");
-            e.printStackTrace();
+            // TODO: include specific information about what the specific issue
+            // with the configuration was
+            logger.fatal("Error reading client configuration client.json", e);
         }
         catch (JSONException e) {
-            // TODO: add proper logging
-            System.out.println("Could not parse client.json");
-            e.printStackTrace();
+            logger.fatal("Could not parse client.json", e);
         }
     }
 

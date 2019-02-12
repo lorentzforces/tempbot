@@ -24,7 +24,7 @@ public class TestTemperatures {
     public void
     randomStringShouldThrowException() {
         exception.expect(IllegalArgumentException.class);
-        Temperature temp = new Temperature("test");
+        Temperature temp = new Temperature("");
     }
 
     @Test

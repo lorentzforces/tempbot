@@ -4,19 +4,6 @@ apply plugin: 'application'
 // this var for application plugin run task
 mainClassName = "fyi.lorentz.tempBot.Bot"
 
-sourceSets {
-    main {
-        java {
-            srcDirs = ["src"]
-        }
-    }
-    test {
-        java {
-            srcDirs = ["test", "src"]
-        }
-    }
-}
-
 repositories {
     jcenter()
     maven {
@@ -27,6 +14,8 @@ repositories {
 dependencies {
     compile "com.github.austinv11:Discord4J:2.9.2"
     compile "org.json:json:20171018"
+    compile "org.apache.logging.log4j:log4j-api:2.11.2"
+    compile "org.apache.logging.log4j:log4j-core:2.11.2"
     testCompile "junit:junit-dep:4.11"
 }
 
