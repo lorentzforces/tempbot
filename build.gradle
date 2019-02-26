@@ -11,7 +11,7 @@ repositories {
 
 dependencies {
     // TODO: inspect dependency types
-    implementation 'com.discord4j:discord4j-core:3.0.0.RC1'
+    compile 'com.discord4j:discord4j-core:3.0.0.RC1'
     compile "org.json:json:20171018"
     compile "org.apache.logging.log4j:log4j-api:2.11.2"
     compile "org.apache.logging.log4j:log4j-core:2.11.2"
