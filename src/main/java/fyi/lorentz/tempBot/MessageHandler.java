@@ -1,46 +1,33 @@
 package fyi.lorentz.tempBot;
 
+import discord4j.core.object.entity.Message;
+
 import fyi.lorentz.tempBot.service.TemperatureProcessor;
 
-import sx.blah.discord.api.events.IListener;
-import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
-import sx.blah.discord.handle.impl.obj.ReactionEmoji;
-import sx.blah.discord.handle.obj.IMessage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-public class MessageHandler implements IListener<MessageReceivedEvent> {
+public class MessageHandler {
 
-    private static final ReactionEmoji angryFace = ReactionEmoji.of("\uD83D\uDE20");
-    private static final ReactionEmoji thinkingFace = ReactionEmoji.of("\uD83E\uDD14");
+    private static final Logger logger = LogManager.getLogger(MessageHandler.class);
 
-    @Override
     public void
-    handle(MessageReceivedEvent event) {
-        handleTemperatures(event);
-        handleBadMentions(event);
+    handle(Message message) {
+        handleTemperatures(message);
     }
 
     private void
-    handleTemperatures(MessageReceivedEvent event) {
-        String inputText = event.getMessage().getFormattedContent();
+    handleTemperatures(Message message) {
+        String inputText = message.getContent().orElse("");
 
         TemperatureProcessor tempProcessor = new TemperatureProcessor(inputText);
         String output = tempProcessor.processMessage();
 
-        if(output.length() > 0) {
-            event.getChannel().sendMessage(output);
+        if (output.length() > 0) {
+            message.getChannel().subscribe(channel -> {
+                channel.createMessage(output).subscribe();
+            });
         }
     }
 
-    private void
-    handleBadMentions(MessageReceivedEvent event) {
-        IMessage message = event.getMessage();
-
-        if(message.mentionsEveryone()) {
-            message.addReaction(angryFace);
-        }
-
-        if(message.mentionsHere()) {
-            message.addReaction(thinkingFace);
-        }
-    }
 }
