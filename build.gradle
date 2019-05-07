@@ -18,6 +18,11 @@ dependencies {
     testCompile "junit:junit-dep:4.11"
 }
 
+compileJava {
+	sourceCompatibility = 1.8
+	targetCompatibility = 1.8
+}
+
 jar {
     manifest {
         attributes "Main-Class": mainClassName
