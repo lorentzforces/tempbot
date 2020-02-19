@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'application'
 
 // this var for application plugin run task
-mainClassName = "fyi.lorentz.tempBot.Bot"
+mainClassName = "fyi.lorentz.tempbot.Bot"
 
 repositories {
     jcenter()
@@ -11,7 +11,7 @@ repositories {
 
 dependencies {
     // TODO: inspect dependency types
-    compile 'com.discord4j:discord4j-core:3.0.0.RC1'
+    compile 'com.discord4j:discord4j-core:3.0.9'
     compile "org.json:json:20171018"
     compile "org.apache.logging.log4j:log4j-api:2.11.2"
     compile "org.apache.logging.log4j:log4j-core:2.11.2"
@@ -19,13 +19,21 @@ dependencies {
 }
 
 compileJava {
-	sourceCompatibility = 1.8
-	targetCompatibility = 1.8
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
+
+test {
+    testLogging {
+        outputs.upToDateWhen { false }
+        showStandardStreams = true
+    }
 }
 
 jar {
     manifest {
         attributes "Main-Class": mainClassName
+        attributes "Multi-Release": true
     }
 
     from configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }

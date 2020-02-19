@@ -1,19 +1,18 @@
-package fyi.lorentz.tempBot;
+package fyi.lorentz.tempbot;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import discord4j.core.object.entity.User;
+import fyi.lorentz.tempbot.engine.Processor;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Bot {
 
@@ -26,19 +25,25 @@ public class Bot {
         try {
             ClientConfig clientConfig = loadClientConfig();
 
+            Processor processor = ProcessorData.createProcesser();
+
             DiscordClientBuilder builder = new DiscordClientBuilder(clientConfig.token);
             DiscordClient client = builder.build();
+
+            User me = client.getSelf().block();
+
+            System.out.println("clientconfig token: " + clientConfig.token);
 
             client.getEventDispatcher()
                 .on(MessageCreateEvent.class)
                 .map(MessageCreateEvent::getMessage)
                 .filter(message ->
-                    message.getAuthor().map(
+                    message.getAuthor()
+                    .map(
                         user -> !user.isBot()
                     ).orElse(false))
                 .subscribe(message -> {
-                    MessageHandler handler = new MessageHandler();
-                    handler.handle(message);
+                     new MessageHandler(processor, me).handle(message);
                 });
 
             client.login().block();

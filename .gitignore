@@ -8,7 +8,7 @@ bin
 build
 modules
 out
-tempBot.jar
+tempbot.jar
 
 -- config file contains secrets
 client.json
