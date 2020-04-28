@@ -61,21 +61,16 @@ public class MessageHandler {
 
     private void
     handleOriginalValue(UnitValue originalValue, StringBuilder output) {
-        output.append(format.format(originalValue.getValue()))
-                .append(" ")
-                .append(originalValue.getUnit().getFullName())
-                .append(" = ")
-                .append("\n");
+        addUnitValueString(originalValue, output);
+        output.append(" = \n");
     }
 
     private void
     handleResults(List<UnitValue> results, StringBuilder output) {
         for (UnitValue result : results) {
-            output.append("> ")
-                    .append(format.format(result.getValue()))
-                    .append(" ")
-                    .append(result.getUnit().getFullName())
-                    .append("\n");
+            output.append("> ");
+            addUnitValueString(result, output);
+            output.append("\n");
         }
     }
 
@@ -84,19 +79,24 @@ public class MessageHandler {
         for (Exception error : errors) {
             if (error instanceof UnitRangeException) {
                 UnitRangeException rangeError = (UnitRangeException) error;
-                output.append("**ERROR:** Provided value ")
-                        .append(format.format(rangeError.getOffendingValue().getValue()))
-                        .append(" is ")
-                        .append(
-                                rangeError.isMaximum()
-                                        ? "greater than the maximum value "
-                                        : "less than the minimum value "
-                        )
-                        .append(format.format(rangeError.getRangeLimitingValue().getValue()))
-                        .append(" for ")
-                        .append(rangeError.getRangeLimitingValue().getUnit().getFullName());
+
+                addUnitValueString(rangeError.getOffendingValue(), output);
+                output.append(" is ");
+                output.append(rangeError.isMaximum() ? "greater than " : "less than ");
+                addUnitValueString(rangeError.getRangeLimitingValue(), output);
+                output.append(", the ");
+                output.append(rangeError.isMaximum() ? "maximum." : "minimum.");
             }
         }
+    }
+
+    private void
+    addUnitValueString(UnitValue value, StringBuilder buffer) {
+        buffer.append("**")
+                .append(format.format(value.getValue()))
+                .append(" ")
+                .append(value.getUnit().getShortName())
+                .append("**");
     }
 
 }
