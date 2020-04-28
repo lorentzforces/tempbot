@@ -30,6 +30,7 @@ public class MessageHandler {
     handle(Message message) {
         logger.debug("Message handling: " + message.getContent().orElse(""));
         boolean botWasMentioned = message.getUserMentionIds().contains(currentUser.getId());
+
         List<ProcessingResult> results =
                 processor.processMessage(message.getContent().orElse(""), botWasMentioned);
 
@@ -40,9 +41,9 @@ public class MessageHandler {
             StringBuilder standardOutput = new StringBuilder("");
             StringBuilder errorOutput = new StringBuilder("");
 
-            handleOriginalValue(result.sourceValue, originalValueOutput);
-            handleResults(result.values, standardOutput);
-            handleErrors(result.errors, errorOutput);
+            formatOriginalValue(result.sourceValue, originalValueOutput);
+            formatResults(result.values, standardOutput);
+            formatErrors(result.errors, errorOutput);
 
             if (standardOutput.length() + errorOutput.length() > 0) {
                 if (standardOutput.length() > 0) {
@@ -60,13 +61,13 @@ public class MessageHandler {
     }
 
     private void
-    handleOriginalValue(UnitValue originalValue, StringBuilder output) {
+    formatOriginalValue(UnitValue originalValue, StringBuilder output) {
         addUnitValueString(originalValue, output);
         output.append(" = \n");
     }
 
     private void
-    handleResults(List<UnitValue> results, StringBuilder output) {
+    formatResults(List<UnitValue> results, StringBuilder output) {
         for (UnitValue result : results) {
             output.append("> ");
             addUnitValueString(result, output);
@@ -75,7 +76,7 @@ public class MessageHandler {
     }
 
     private void
-    handleErrors(List<Exception> errors, StringBuilder output) {
+    formatErrors(List<Exception> errors, StringBuilder output) {
         for (Exception error : errors) {
             if (error instanceof UnitRangeException) {
                 UnitRangeException rangeError = (UnitRangeException) error;
