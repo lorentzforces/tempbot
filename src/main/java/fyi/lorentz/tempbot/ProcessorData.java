@@ -12,11 +12,17 @@ public class ProcessorData {
         return new ProcessorBuilder()
                 .addDimension(createTemperatureDimension())
                 .addDimension(createSpeedDimension())
+                .addDimension(createBloodSugarDimension())
+                .addDimension(createWeightDimension())
                 .build();
         // TODO: add other dimensions
-        // * blood sugar
-        // * weight/mass
+        // these may have to wait until I build a way to specify the target
+        // of the conversion (i.e. "I want to convert a specific unit value to another
+        // specific unit) just because of the massive number of units involved that people
+        // might be interested in
         // * length
+        //   * do we maybe do a "large scale distance" versus "short scale distance?"
+        //     which we might call "distance" vs "length" maybe?
         // * liquid volume
     }
 
@@ -62,6 +68,7 @@ public class ProcessorData {
     }
 
     public static DimensionBuilder
+
     createSpeedDimension() {
         UnitBuilder milesPerHour = new UnitBuilder()
                 .setFullName("miles per hour")
@@ -99,6 +106,55 @@ public class ProcessorData {
                 .setMinValue(0d);
 
         return speed;
+    }
+
+    public static DimensionBuilder
+    createBloodSugarDimension() {
+        UnitBuilder usUnits = new UnitBuilder()
+                .setFullName("milligrams per deciliter")
+                .setShortName("mg/dL")
+                .setIsDefaultConversionResult(true)
+                .addDetectableName("mg/dl")
+                .setConversionTo(x -> (x * 18d))
+                .setConversionFrom(x -> (x / 18d));
+        UnitBuilder globalUnits = new UnitBuilder()
+                .setFullName("millimols per liter")
+                .setShortName("mmol/L")
+                .setIsDefaultConversionResult(true)
+                .addDetectableName("mmol/l")
+                .setConversionTo(x -> x)
+                .setConversionFrom(x -> x);
+        DimensionBuilder bloodSugar = new DimensionBuilder()
+                .setName("Blood sugar")
+                .addUnit(usUnits)
+                .addUnit(globalUnits)
+                .setMinValue(0d);
+
+        return bloodSugar;
+    }
+
+    public static DimensionBuilder
+    createWeightDimension() {
+        UnitBuilder kilograms = new UnitBuilder()
+                .setFullName("kilograms")
+                .setShortName("kg")
+                .setIsDefaultConversionResult(true)
+                .setConversionTo(x -> x)
+                .setConversionFrom(x -> x);
+        UnitBuilder pounds = new UnitBuilder()
+                .setFullName("pounds")
+                .setShortName("lbs")
+                .setIsDefaultConversionResult(true)
+                .addDetectableName("lb")
+                .setConversionTo(x -> (x * 2.2046))
+                .setConversionFrom(x -> (x / 2.2046));
+        DimensionBuilder weight = new DimensionBuilder()
+                .setName("Weight")
+                .addUnit(kilograms)
+                .addUnit(pounds)
+                .setMinValue(0d);
+
+        return weight;
     }
 
 }
