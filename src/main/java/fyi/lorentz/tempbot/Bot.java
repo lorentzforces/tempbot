@@ -3,6 +3,7 @@ package fyi.lorentz.tempbot;
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import fyi.lorentz.tempbot.engine.Processor;
 import java.io.IOException;
@@ -36,14 +37,19 @@ public class Bot {
 
             client.getEventDispatcher()
                 .on(MessageCreateEvent.class)
-                .map(MessageCreateEvent::getMessage)
-                .filter(message ->
-                    message.getAuthor()
-                    .map(
-                        user -> !user.isBot()
-                    ).orElse(false))
-                .subscribe(message -> {
-                     new MessageHandler(processor, me).handle(message);
+                .subscribe(messageCreateEvent -> {
+                    Message message = messageCreateEvent.getMessage();
+                    boolean shouldProcessMessage =
+                            message.getAuthor().isPresent()
+                            && !message.getAuthor().get().isBot();
+                    if (shouldProcessMessage) {
+                        // lack of a guild id means a private message without requiring
+                        // another API call for channel information
+                        new MessageHandler(processor, me).handle(
+                                message,
+                                !messageCreateEvent.getGuildId().isPresent()
+                        );
+                    }
                 });
 
             client.login().block();
