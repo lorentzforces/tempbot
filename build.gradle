@@ -11,11 +11,11 @@ repositories {
 
 dependencies {
     // TODO: inspect dependency types
-    compile 'com.discord4j:discord4j-core:3.0.9'
-    compile "org.json:json:20171018"
-    compile "org.apache.logging.log4j:log4j-api:2.11.2"
-    compile "org.apache.logging.log4j:log4j-core:2.11.2"
-    testCompile "junit:junit-dep:4.11"
+    implementation 'com.discord4j:discord4j-core:3.1.0'
+    implementation "org.json:json:20171018"
+    implementation "org.apache.logging.log4j:log4j-api:2.11.2"
+    implementation "org.apache.logging.log4j:log4j-core:2.11.2"
+    testImplementation "junit:junit-dep:4.11"
 }
 
 compileJava {

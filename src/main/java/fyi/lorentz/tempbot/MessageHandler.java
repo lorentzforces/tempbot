@@ -44,8 +44,8 @@ public class MessageHandler {
 
     public void
     handle(Message message, boolean isPrivateMessage) {
-        logger.debug("Message handling: \"" + message.getContent().orElse("") + "\"");
-        String messageContent = message.getContent().orElse("");
+        String messageContent = message.getContent();
+        logger.debug("Message handling: \"" + messageContent + "\"");
         if (messageContent.length() == 0) {
             return;
         }

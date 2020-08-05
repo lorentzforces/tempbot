@@ -2,6 +2,7 @@ package fyi.lorentz.tempbot;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
+import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
@@ -28,31 +29,40 @@ public class Bot {
 
             Processor processor = ProcessorData.createProcesser();
 
-            DiscordClientBuilder builder = new DiscordClientBuilder(clientConfig.token);
-            DiscordClient client = builder.build();
+            DiscordClient client = DiscordClientBuilder.create(clientConfig.token).build();
 
-            User me = client.getSelf().block();
-
+            // sanity output to stdout when manually running
             System.out.println("clientconfig token: " + clientConfig.token);
 
-            client.getEventDispatcher()
-                .on(MessageCreateEvent.class)
-                .subscribe(messageCreateEvent -> {
-                    Message message = messageCreateEvent.getMessage();
-                    boolean shouldProcessMessage =
-                            message.getAuthor().isPresent()
-                            && !message.getAuthor().get().isBot();
-                    if (shouldProcessMessage) {
-                        // lack of a guild id means a private message without requiring
-                        // another API call for channel information
-                        new MessageHandler(processor, me).handle(
-                                message,
-                                !messageCreateEvent.getGuildId().isPresent()
-                        );
+            client.withGateway(gatewayClient -> {
+                gatewayClient.getEventDispatcher().on(ReadyEvent.class).subscribe(
+                    ready -> {
+                        logger.info("Client connected");
                     }
-                });
+                );
 
-            client.login().block();
+                gatewayClient.getEventDispatcher()
+                    .on(MessageCreateEvent.class)
+                    .subscribe(messageCreateEvent -> {
+                        Message message = messageCreateEvent.getMessage();
+                        boolean shouldProcessMessage =
+                                message.getAuthor().isPresent()
+                                && !message.getAuthor().get().isBot();
+                        if (shouldProcessMessage) {
+                            // why the fuck is this necessary
+                            User me = messageCreateEvent.getClient().getSelf().block();
+                            // lack of a guild id means a private message without requiring
+                            // another API call for channel information
+                            new MessageHandler(processor, me).handle(
+                                    message,
+                                    !messageCreateEvent.getGuildId().isPresent()
+                            );
+                        }
+                    });
+
+                return gatewayClient.onDisconnect();
+            }).block();
+
         }
         catch (IOException e) {
             // TODO: include specific information about what the specific issue
