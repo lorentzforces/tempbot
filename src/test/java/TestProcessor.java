@@ -94,12 +94,21 @@ public class TestProcessor {
     @Test
     public void
     testMultipleValuesAreConverted() {
-        List<ProcessingResult> multipleResults = processor.processMessage("32 F and some text and 23 F", false);
+        List<ProcessingResult> multipleResults =
+                processor.processMessage("32 F and some text and 23 F", false);
 
         assertEquals(2, multipleResults.size());
 
         assertDoublesEqual(32d, multipleResults.get(0).sourceValue.getValue());
         assertDoublesEqual(23d, multipleResults.get(1).sourceValue.getValue());
+    }
+
+    @Test
+    public void
+    testDuplicateValuesAreConsolidated() {
+        List<ProcessingResult> results = processor.processMessage("32F and 32F", false);
+
+        assertEquals(1, results.size());
     }
 
     /**

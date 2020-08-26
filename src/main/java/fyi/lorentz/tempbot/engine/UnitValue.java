@@ -1,5 +1,7 @@
 package fyi.lorentz.tempbot.engine;
 
+import static fyi.lorentz.tempbot.Util.doublesAreEqual;
+
 public class UnitValue {
 
     private final Unit unit;
@@ -24,6 +26,14 @@ public class UnitValue {
     public Double
     getValue() {
         return value;
+    }
+
+    public boolean
+    equalsUnitValue(UnitValue that) {
+        return (
+                this.unit.equalsUnit(that.unit)
+                && doublesAreEqual(this.value, that.value)
+        );
     }
 
 }

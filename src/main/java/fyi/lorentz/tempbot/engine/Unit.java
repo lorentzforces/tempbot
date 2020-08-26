@@ -52,12 +52,22 @@ public class Unit {
         return detectableNames;
     }
 
-    public Double convertTo(Double input) {
+    public Double
+    convertTo(Double input) {
         return convertTo.apply(input);
     }
 
-    public Double convertFrom(Double input) {
+    public Double
+    convertFrom(Double input) {
         return convertFrom.apply(input);
+    }
+
+    public boolean
+    equalsUnit(Unit that) {
+        return (
+            this.shortName.equals(that.shortName)
+            && this.fullName.equals(that.fullName)
+        );
     }
 
 }

@@ -48,7 +48,12 @@ public class Processor {
                 result.errors.add(e);
             }
 
-            if (result.sourceValue != null) {
+            boolean valueExists =
+                    results.stream().anyMatch(existingResult ->
+                            result.sourceValue.equalsUnitValue(existingResult.sourceValue)
+                    );
+
+            if (!valueExists && result.sourceValue != null) {
                 try {
                     result.values =
                             result.dimension.convertUnit(
@@ -59,9 +64,9 @@ public class Processor {
                 catch (UnitRangeException e) {
                     result.errors.add(e);
                 }
-            }
 
-            results.add(result);
+                results.add(result);
+            }
         }
 
         return results;
