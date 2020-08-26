@@ -28,7 +28,13 @@ public class ProcessorBuilder {
         }
 
         Pattern masterPattern = buildPattern(newDimensions);
-        return new Processor(masterPattern, newDimensions, dimensionMap);
+        Pattern specificConversionPattern = buildSpecificConversionPattern(newDimensions);
+        return new Processor(
+                masterPattern,
+                specificConversionPattern,
+                newDimensions,
+                dimensionMap
+        );
     }
 
     private Pattern
@@ -41,10 +47,7 @@ public class ProcessorBuilder {
 
         String sometimesASpace = "[ ]?";
 
-        String labelRegex = dimensions.stream()
-            .flatMap(dimension -> dimension.getUnitNames().stream())
-            .map(unitLabel -> Pattern.quote(unitLabel))
-            .collect(Collectors.joining("|"));
+        String labelRegex = buildLabelRegex(dimensions);
 
         StringBuilder finalRegex = new StringBuilder(lineBeginningOrWhitespace)
                 .append(numberRegex)
@@ -56,6 +59,28 @@ public class ProcessorBuilder {
                 .append(")\\b");
 
         return Pattern.compile(finalRegex.toString());
+    }
+
+    private Pattern
+    buildSpecificConversionPattern(Collection<Dimension> dimensions) {
+        String whitespaceAndTo = "\\s+[tT][oO]\\s+";
+        String labelRegex = buildLabelRegex(dimensions);
+
+        StringBuilder regex = new StringBuilder(whitespaceAndTo)
+                .append("(?<")
+                .append(Processor.PATTERN_DESTINATION_UNIT_GROUP)
+                .append(">")
+                .append(labelRegex)
+                .append(")\\b");
+
+        return Pattern.compile(regex.toString());
+    }
+    private String
+    buildLabelRegex(Collection<Dimension> dimensions) {
+        return dimensions.stream()
+            .flatMap(dimension -> dimension.getUnitNames().stream())
+            .map(unitLabel -> Pattern.quote(unitLabel))
+            .collect(Collectors.joining("|"));
     }
 
     public ProcessorBuilder

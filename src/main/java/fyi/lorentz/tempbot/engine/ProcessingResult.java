@@ -12,5 +12,6 @@ public class ProcessingResult {
     public UnitValue sourceValue;
     public List<UnitValue> values = new ArrayList<>();
     public List<Exception> errors = new ArrayList<>();
+    public boolean isSpecificConversion;
 
 }

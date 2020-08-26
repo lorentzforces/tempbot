@@ -68,6 +68,7 @@ public class TestProcessor {
         assertEquals(UnitRangeException.class, error.getClass());
     }
 
+
     @Test
     public void
     testConversionIsCorrect() {
@@ -121,6 +122,60 @@ public class TestProcessor {
         assertEquals(10, results.size());
     }
 
+    @Test
+    public void
+    testSpecificConversionSucceeds() {
+        List<ProcessingResult> results = processor.processMessage("5C to Kelvin", false);
+
+        assertEquals(1, results.size());
+        ProcessingResult result = results.get(0);
+        assertDoublesEqual(278.15d, getUnitValueFromResult(result, "degrees Kelvin"));
+    }
+
+    @Test
+    public void
+    testSpecificConversionBetweenDimensionsFails() {
+        List<ProcessingResult> results = processor.processMessage("5C to dummy", false);
+
+        assertEquals(1, results.size());
+        ProcessingResult result = results.get(0);
+        assertEquals(1, result.errors.size());
+        Exception error = result.errors.get(0);
+        assertEquals(MismatchedDimensionsException.class, error.getClass());
+    }
+
+    @Test
+    public void
+    testSpecificAndGeneralConversionsBothWork() {
+        List<ProcessingResult> results = processor.processMessage("0F 5C to Kelvin", false);
+
+        assertEquals(2, results.size());
+
+        ProcessingResult generalConversion = results.get(0);
+        assertEquals(1, generalConversion.values.size());
+        assertDoublesEqual(0d, generalConversion.sourceValue.getValue());
+
+        ProcessingResult specificConversion = results.get(1);
+        assertEquals(1, specificConversion.values.size());
+        assertDoublesEqual(
+                278.15d,
+                getUnitValueFromResult(specificConversion, "degrees Kelvin")
+        );
+    }
+
+    @Test
+    public void
+    testMaxMinValuesAreRespectedWithSpecificConversions() {
+        List<ProcessingResult> results =
+                processor.processMessage("-20 K to Celsius", false);
+
+        assertEquals(1, results.size());
+        ProcessingResult belowAbsoluteZero = results.get(0);
+        assertEquals(1, belowAbsoluteZero.errors.size());
+        Exception error = belowAbsoluteZero.errors.get(0);
+        assertEquals(UnitRangeException.class, error.getClass());
+    }
+
     /**
      * Temperature is used as a reasonable representative use case.
      */
@@ -161,8 +216,17 @@ public class TestProcessor {
                 .addUnit(fahrenheit)
                 .addUnit(kelvin)
                 .setMinValue(0d);
+        UnitBuilder randomOtherUnit = new UnitBuilder()
+                .setFullName("dummy")
+                .setShortName("dumb")
+                .setConversionTo(x -> x)
+                .setConversionFrom(x -> x);
+        DimensionBuilder randomDimension = new DimensionBuilder()
+                .setName("Dummy Dimension")
+                .addUnit(randomOtherUnit);
         ProcessorBuilder processorBuilder = new ProcessorBuilder();
         processorBuilder.addDimension(temperature);
+        processorBuilder.addDimension(randomDimension);
 
         return processorBuilder.build();
     }
