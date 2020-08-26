@@ -7,4 +7,6 @@ public final class Constants {
     // we set our comparison epsilon range to half the smallest precision (basically rounding)
     public static final double COMPARISON_EPSILON = Math.pow(0.1d, PRECISION + 1) / 2;
 
+    public static final int MAX_CONVERSIONS = 10;
+
 }

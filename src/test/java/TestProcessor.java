@@ -111,6 +111,16 @@ public class TestProcessor {
         assertEquals(1, results.size());
     }
 
+    @Test
+    public void
+    testMaximumValuesProcessed() {
+        // assumes that Constants.MAX_CONVERSIONS is 10
+        List<ProcessingResult> results =
+                processor.processMessage("1F 2F 3F 4F 5F 6F 7F 8F 9F 10F 11F 12F", false);
+
+        assertEquals(10, results.size());
+    }
+
     /**
      * Temperature is used as a reasonable representative use case.
      */

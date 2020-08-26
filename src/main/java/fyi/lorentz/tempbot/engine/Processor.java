@@ -7,6 +7,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static fyi.lorentz.tempbot.Constants.MAX_CONVERSIONS;
+
 public class Processor {
 
     public static final String PATTERN_NUMBER_GROUP = "number";
@@ -32,7 +34,9 @@ public class Processor {
 
         List<ProcessingResult> results = new ArrayList<>();
 
-        while (matcher.find()) {
+        // checking against the max this way means that we consider
+        // the number of results --NOT including duplicates--
+        while (matcher.find() && results.size() < MAX_CONVERSIONS) {
             ProcessingResult result = new ProcessingResult();
 
             result.valueString = matcher.group(PATTERN_NUMBER_GROUP);
