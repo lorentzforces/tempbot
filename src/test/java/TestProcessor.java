@@ -142,6 +142,13 @@ public class TestProcessor {
 
     @Test
     public void
+    testSpecificConversionWorksOnNonDefaultUnits() {
+        List<ProcessingResult> specificResults = processor.processMessage("2K to C", false);
+        assertEquals(1, specificResults.size());
+    }
+
+    @Test
+    public void
     testSpecificConversionBetweenDimensionsFails() {
         List<ProcessingResult> results = processor.processMessage("5C to dummy", false);
 

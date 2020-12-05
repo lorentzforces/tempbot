@@ -62,19 +62,19 @@ public class Processor {
                             result.sourceValue.equalsUnitValue(existingResult.sourceValue)
                     );
 
-            if (
-                    !valueExists && result.sourceValue != null
-                    && (
-                        result.sourceValue.getUnit().isDefaultConversionSource()
-                        || doMoreConversions
-                    )
-            ) {
+            if (!valueExists && result.sourceValue != null) {
                 doSpecificConversion(
                         message, mainMatcher,
                         specificMatcher, result
                 );
 
-                if (!result.isSpecificConversion) {
+                if (
+                        !result.isSpecificConversion
+                        && (
+                            result.sourceValue.getUnit().isDefaultConversionSource()
+                            || doMoreConversions
+                        )
+                ) {
                     try {
                         result.values =
                                 result.dimension.convertUnit(
@@ -87,7 +87,9 @@ public class Processor {
                     }
                 }
 
-                results.add(result);
+                if (result.values.size() > 0 || result.errors.size() > 0) {
+                    results.add(result);
+                }
             }
         }
 
