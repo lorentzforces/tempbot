@@ -7,6 +7,7 @@ public class Unit {
 
     private final String fullName;
     private final String shortName;
+    private final boolean isDefaultConversionSource;
     private final boolean isDefaultConversionResult;
     private final Set<String> detectableNames;
 
@@ -16,6 +17,7 @@ public class Unit {
     public Unit(
             String fullName,
             String shortName,
+            boolean isDefaultConversionSource,
             boolean isDefaultConversionResult,
             Set<String> detectableNames,
             Function<Double, Double> convertTo,
@@ -23,6 +25,7 @@ public class Unit {
     ) {
         this.fullName = fullName;
         this.shortName = shortName;
+        this.isDefaultConversionSource = isDefaultConversionSource;
         this.isDefaultConversionResult = isDefaultConversionResult;
         this.detectableNames = detectableNames;
         detectableNames.add(fullName);
@@ -40,6 +43,11 @@ public class Unit {
     public String
     getShortName() {
         return shortName;
+    }
+
+    public boolean
+    isDefaultConversionSource() {
+        return isDefaultConversionSource;
     }
 
     public boolean

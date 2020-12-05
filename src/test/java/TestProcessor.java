@@ -60,8 +60,16 @@ public class TestProcessor {
 
     @Test
     public void
+    testDefaultSourcesAreAutomaticallyConverted() {
+        List<ProcessingResult> defaultConversionsOnly =
+                processor.processMessage("32F 500K", false);
+        assertEquals(1, defaultConversionsOnly.size());
+    }
+
+    @Test
+    public void
     testMaxMinValuesAreRespected() {
-        ProcessingResult belowAbsoluteZero = processor.processMessage("-20 K", false).get(0);
+        ProcessingResult belowAbsoluteZero = processor.processMessage("-20 K", true).get(0);
 
         assertEquals(1, belowAbsoluteZero.errors.size());
         Exception error = belowAbsoluteZero.errors.get(0);
@@ -167,7 +175,7 @@ public class TestProcessor {
     public void
     testMaxMinValuesAreRespectedWithSpecificConversions() {
         List<ProcessingResult> results =
-                processor.processMessage("-20 K to Celsius", false);
+                processor.processMessage("-20 K to Celsius", true);
 
         assertEquals(1, results.size());
         ProcessingResult belowAbsoluteZero = results.get(0);
@@ -184,6 +192,7 @@ public class TestProcessor {
         UnitBuilder celsius = new UnitBuilder()
                 .setFullName("degrees Celsius")
                 .setShortName("°C")
+                .setIsDefaultConversionSource(true)
                 .setIsDefaultConversionResult(true)
                 .addDetectableName("C")
                 .addDetectableName("c")
@@ -194,6 +203,7 @@ public class TestProcessor {
         UnitBuilder fahrenheit = new UnitBuilder()
                 .setFullName("degrees Fahrenheit")
                 .setShortName("°F")
+                .setIsDefaultConversionSource(true)
                 .setIsDefaultConversionResult(true)
                 .addDetectableName("F")
                 .addDetectableName("f")

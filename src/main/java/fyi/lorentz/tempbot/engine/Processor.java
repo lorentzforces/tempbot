@@ -62,8 +62,13 @@ public class Processor {
                             result.sourceValue.equalsUnitValue(existingResult.sourceValue)
                     );
 
-            if (!valueExists && result.sourceValue != null) {
-                result.isSpecificConversion = false;
+            if (
+                    !valueExists && result.sourceValue != null
+                    && (
+                        result.sourceValue.getUnit().isDefaultConversionSource()
+                        || doMoreConversions
+                    )
+            ) {
                 doSpecificConversion(
                         message, mainMatcher,
                         specificMatcher, result

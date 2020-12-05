@@ -89,7 +89,6 @@ public class MessageHandler {
                 privateChannel.createMessage(helpMessage.toString()).subscribe();
             });
         }
-
     }
 
     private void

@@ -8,6 +8,7 @@ public class UnitBuilder {
 
     private String fullName;
     private String shortName;
+    private boolean isDefaultConversionSource;
     private boolean isDefaultConversionResult;
     private Set<String> detectableNames;
 
@@ -27,6 +28,7 @@ public class UnitBuilder {
         return new Unit(
                 fullName,
                 shortName,
+                isDefaultConversionSource,
                 isDefaultConversionResult,
                 detectableNames,
                 convertTo,
@@ -43,6 +45,12 @@ public class UnitBuilder {
     public UnitBuilder
     setShortName(String shortName) {
         this.shortName = shortName;
+        return this;
+    }
+
+    public UnitBuilder
+    setIsDefaultConversionSource(boolean isDefaultConversionSource) {
+        this.isDefaultConversionSource = isDefaultConversionSource;
         return this;
     }
 
