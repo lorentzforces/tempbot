@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Dimension {
 
@@ -74,20 +75,25 @@ public class Dimension {
         Double baseValue = input.getUnit().convertFrom(input.getValue());
 
         // check for min/max values
-        if (minValue != null && baseValue < minValue.doubleValue()) {
+        if (minValue != null && baseValue < minValue) {
             double minValueInUnit = input.getUnit().convertTo(minValue);
             throw new UnitRangeException(
                     new UnitValue(input.getUnit(), minValueInUnit),
                     input
             );
         }
-        if (maxValue != null && baseValue > maxValue.doubleValue()) {
+        if (maxValue != null && baseValue > maxValue) {
             double maxValueInUnit = input.getUnit().convertTo(maxValue);
             throw new UnitRangeException(
                     new UnitValue(input.getUnit(), maxValueInUnit),
                     input
             );
         }
+    }
+
+    public Stream<Unit>
+    getUnits() {
+        return units.stream();
     }
 
     public String

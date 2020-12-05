@@ -15,10 +15,10 @@ public class Processor {
     public static final String PATTERN_LABEL_GROUP = "label";
     public static final String PATTERN_DESTINATION_UNIT_GROUP = "unit";
 
-    private Pattern masterPattern;
-    private Pattern specificConversionPattern;
-    private Map<String, Dimension> dimensionMap;
-    private List<Dimension> dimensions;
+    private final Pattern masterPattern;
+    private final Pattern specificConversionPattern;
+    private final Map<String, Dimension> dimensionMap;
+    private final List<Dimension> dimensions;
 
     public Processor(
         Pattern masterPattern,
@@ -132,6 +132,14 @@ public class Processor {
     public Stream<Dimension>
     getDimensions() {
         return dimensions.stream();
+    }
+
+    public Dimension
+    getDimensionFromName(String name) {
+        return dimensions.stream()
+                .filter(dimension -> dimension.getName().equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
     }
 
 }

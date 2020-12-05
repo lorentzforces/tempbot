@@ -23,11 +23,17 @@ public class MessageHandler {
 
     private static final Pattern HELP_PATTERN =
             Pattern.compile("\\bhelp\\b", Pattern.CASE_INSENSITIVE);
+    // literally just a pattern to grab the first word
+    private static final String PATTERN_WORD_GROUP = "word";
+    private static final String PATTERN_DIMENSION_GROUP = "dimension";
+    private static final Pattern WORD_PATTERN =
+            Pattern.compile("\\b(?<" + PATTERN_WORD_GROUP + ">\\w+)\\b");
 
     private final Processor processor;
     private final User currentUser;
     private final DecimalFormat format;
     private final Pattern rawBotMentionPattern;
+    private final Pattern helpPattern;
 
     public MessageHandler(Processor processor, User currentUser) {
         this.processor = processor;
@@ -40,6 +46,29 @@ public class MessageHandler {
         format = new DecimalFormat(formatString.toString());
 
         rawBotMentionPattern = Pattern.compile("<@!?" + currentUser.getId().asString() + ">");
+        helpPattern = buildHelpMatchPattern(processor);
+    }
+
+    private static Pattern
+    buildHelpMatchPattern(Processor processor) {
+        String lineBeginningOrWhitespace = "(?:^|\\s)";
+        String spacing = "\\s+";
+        String dimensionRegex = processor.getDimensions()
+                .map(dimension -> Pattern.quote(dimension.getName()))
+                .collect(Collectors.joining("|"));
+
+        StringBuilder helpPattern = new StringBuilder(lineBeginningOrWhitespace)
+                .append("help")
+                .append("(?:")
+                .append(spacing)
+                .append("(?<")
+                .append(PATTERN_DIMENSION_GROUP)
+                .append(">")
+                .append(dimensionRegex)
+                .append("))?") // closes capturing group as well as the non-capturing one
+                .append("\\b");
+
+        return Pattern.compile(helpPattern.toString(), Pattern.CASE_INSENSITIVE);
     }
 
     public void
@@ -74,21 +103,62 @@ public class MessageHandler {
     handlePotentialHelpResponse(String messageContents, User them) {
         Matcher botMentionMatcher = rawBotMentionPattern.matcher(messageContents);
         String contentsWithoutBotMention = botMentionMatcher.replaceAll("").trim();
-        boolean includesHelp = HELP_PATTERN.matcher(messageContents).find();
+        Matcher helpMatcher = helpPattern.matcher(messageContents);
 
-        if (contentsWithoutBotMention.length() == 0 || includesHelp) {
-            StringBuilder helpMessage = new StringBuilder(HELP_TEXT)
-                    .append("\n")
-                    .append("Right now, I can do conversions for:\n")
-                    .append("> ")
-                    .append(processor.getDimensions()
-                            .map(Dimension::getName)
-                            .collect(Collectors.joining("\n> "))
-                    );
+        StringBuilder helpMessage = new StringBuilder();
+        if (helpMatcher.find()) {
+            String dimensionString = helpMatcher.group(PATTERN_DIMENSION_GROUP);
+            if (dimensionString == null) {
+                createGeneralHelpMessage(helpMessage);
+            }
+            else {
+                createDimensionListingMessage(
+                        processor.getDimensionFromName(dimensionString),
+                        helpMessage
+                );
+            }
+        }
+        else if (contentsWithoutBotMention.length() == 0) {
+            createGeneralHelpMessage(helpMessage);
+        }
+
+
+        if (helpMessage.length() > 0) {
             them.getPrivateChannel().subscribe(privateChannel -> {
                 privateChannel.createMessage(helpMessage.toString()).subscribe();
             });
         }
+    }
+
+    private void
+    createDimensionListingMessage(Dimension dimension, StringBuilder message) {
+        message.append(DIMENSION_HELP_TEXT)
+                .append("\n> ")
+                .append(dimension.getUnits()
+                        .map(unit -> {
+                            return new StringBuilder()
+                                    .append("**")
+                                    .append(unit.getFullName())
+                                    .append("** ")
+                                    .append("(")
+                                    .append(unit.getDetectableNames().stream()
+                                            .collect(Collectors.joining(", ")))
+                                    .append(")");
+                        })
+                        .collect(Collectors.joining("\n> "))
+                );
+    }
+
+    private void
+    createGeneralHelpMessage(StringBuilder message) {
+        message.append(HELP_TEXT)
+                .append("\n")
+                .append(DIMENSION_EXPLAIN_TEXT)
+                .append("\n> ")
+                .append(processor.getDimensions()
+                        .map(Dimension::getName)
+                        .collect(Collectors.joining("\n> "))
+                );
     }
 
     private void
@@ -151,14 +221,22 @@ public class MessageHandler {
                 .append("**");
     }
 
-
     private static final String HELP_TEXT =
             "Hi!\n"
-            + "**To see this help text, tag me or DM me with \"help\" in the message "
-            + "anywhere I can see it.**\n"
+            + "**To see this help text, tag or DM me with \"help\" in the message.**\n"
             + "If you send a message to me or in a channel I can see, I'll do my best to "
             + "convert any units I recognize in your message. If the unit you want to see "
             + "in the results doesn't appear, try mentioning me in the message (I convert to "
-            + "more--usually uncommon--units if you tag me).";
+            + "more--usually uncommon--units if you tag me).\n"
+            + "To convert to a specific unit, tag or DM me and write \"*<unit value>* to "
+            + "*<result unit>*\"";
+
+    private static final String DIMENSION_EXPLAIN_TEXT =
+            "Right now, I can do conversions for these categories (tag or DM me and say "
+            + "\"help *<category name>*\" to see the units I can convert in each category:";
+
+    private static final String DIMENSION_HELP_TEXT =
+            "These are the units of that type I can convert:";
+
 
 }
