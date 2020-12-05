@@ -168,8 +168,7 @@ public class MessageHandler {
             StringBuilder standardOutput = new StringBuilder("");
             StringBuilder errorOutput = new StringBuilder("");
 
-            formatOriginalValue(result.sourceValue, originalValueOutput);
-            formatResults(result.values, standardOutput);
+            formatResults(result, standardOutput);
             formatErrors(result.errors, errorOutput);
 
             if (standardOutput.length() + errorOutput.length() > 0) {
@@ -188,11 +187,20 @@ public class MessageHandler {
     }
 
     private void
-    formatResults(List<UnitValue> results, StringBuilder output) {
-        for (UnitValue result : results) {
-            output.append("> ");
-            addUnitValueString(result, output);
+    formatResults(ProcessingResult result, StringBuilder output) {
+        addUnitValueString(result.sourceValue, output);
+        output.append(" = ");
+
+        if (result.values.size() == 1) {
+            addUnitValueString(result.values.get(0), output);
+        }
+        else {
             output.append("\n");
+            for (UnitValue value : result.values) {
+                output.append("> ");
+                addUnitValueString(value, output);
+                output.append("\n");
+            }
         }
     }
 
