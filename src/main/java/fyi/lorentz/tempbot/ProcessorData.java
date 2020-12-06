@@ -14,6 +14,7 @@ public class ProcessorData {
                 .addDimension(createSpeedDimension())
                 .addDimension(createBloodSugarDimension())
                 .addDimension(createWeightDimension())
+                .addDimension(createDistanceDimension())
                 .build();
         // TODO: add other dimensions
         // these may have to wait until I build a way to specify the target
@@ -99,12 +100,18 @@ public class ProcessorData {
                 .addDetectableName("ft/s")
                 .setConversionTo(x -> (x / 0.3048d))
                 .setConversionFrom(x -> (x * 0.3048d));
+        UnitBuilder knots = new UnitBuilder()
+                .setFullName("nautical miles per hour")
+                .setShortName("knots")
+                .setConversionTo(x -> x / 0.51444d)
+                .setConversionFrom(x -> x * 0.51444d);
         DimensionBuilder speed = new DimensionBuilder()
                 .setName("Speed")
                 .addUnit(milesPerHour)
                 .addUnit(kilometersPerHour)
                 .addUnit(metersPerSecond)
                 .addUnit(feetPerSecond)
+                .addUnit(knots)
                 .setMinValue(0d);
 
         return speed;
@@ -150,8 +157,8 @@ public class ProcessorData {
                 .setShortName("lbs")
                 .setIsDefaultConversionResult(true)
                 .addDetectableName("lb")
-                .setConversionTo(x -> (x * 2.2046))
-                .setConversionFrom(x -> (x / 2.2046));
+                .setConversionTo(x -> (x * 2.2046d))
+                .setConversionFrom(x -> (x / 2.2046d));
         DimensionBuilder weight = new DimensionBuilder()
                 .setName("Weight")
                 .addUnit(kilograms)
@@ -159,6 +166,41 @@ public class ProcessorData {
                 .setMinValue(0d);
 
         return weight;
+    }
+
+    public static DimensionBuilder
+    createDistanceDimension() {
+        UnitBuilder meters = new UnitBuilder()
+                .setFullName("meters")
+                .setShortName("m")
+                .addDetectableName("metres")
+                .setConversionTo(x -> x)
+                .setConversionFrom(x -> x);
+        UnitBuilder kilometers = new UnitBuilder()
+                .setFullName("kilometers")
+                .setShortName("km")
+                .addDetectableName("kilometres")
+                .setConversionTo(x -> x / 1000d)
+                .setConversionFrom(x -> x * 1000d);
+        UnitBuilder miles = new UnitBuilder()
+                .setFullName("miles")
+                .setShortName("mi")
+                .setConversionTo(x -> x / 1609.34d)
+                .setConversionFrom(x -> x * 1609.34d);
+        UnitBuilder nauticalMiles = new UnitBuilder()
+                .setFullName("nautical miles")
+                .setShortName("nmi")
+                .setConversionTo(x -> x / 1852d)
+                .setConversionFrom(x -> x * 1852d);
+        DimensionBuilder distance = new DimensionBuilder()
+                .setName("Distance")
+                .addUnit(meters)
+                .addUnit(kilometers)
+                .addUnit(miles)
+                .addUnit(nauticalMiles)
+                .setMinValue(0d);
+
+        return distance;
     }
 
 }
