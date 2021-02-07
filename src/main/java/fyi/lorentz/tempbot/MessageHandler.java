@@ -5,6 +5,7 @@ import discord4j.core.object.entity.User;
 import fyi.lorentz.tempbot.engine.Dimension;
 import fyi.lorentz.tempbot.engine.ProcessingResult;
 import fyi.lorentz.tempbot.engine.Processor;
+import fyi.lorentz.tempbot.engine.MismatchedDimensionsException;
 import fyi.lorentz.tempbot.engine.UnitRangeException;
 import fyi.lorentz.tempbot.engine.UnitValue;
 import java.text.DecimalFormat;
@@ -21,13 +22,7 @@ public class MessageHandler {
 
     private static final Logger logger = LogManager.getLogger(MessageHandler.class);
 
-    private static final Pattern HELP_PATTERN =
-            Pattern.compile("\\bhelp\\b", Pattern.CASE_INSENSITIVE);
-    // literally just a pattern to grab the first word
-    private static final String PATTERN_WORD_GROUP = "word";
     private static final String PATTERN_DIMENSION_GROUP = "dimension";
-    private static final Pattern WORD_PATTERN =
-            Pattern.compile("\\b(?<" + PATTERN_WORD_GROUP + ">\\w+)\\b");
 
     private final Processor processor;
     private final User currentUser;
@@ -122,7 +117,6 @@ public class MessageHandler {
             createGeneralHelpMessage(helpMessage);
         }
 
-
         if (helpMessage.length() > 0) {
             them.getPrivateChannel().subscribe(privateChannel -> {
                 privateChannel.createMessage(helpMessage.toString()).subscribe();
@@ -164,42 +158,33 @@ public class MessageHandler {
     private void
     formatProcessingResults(List<ProcessingResult> results, StringBuilder output) {
         for (ProcessingResult result : results) {
-            StringBuilder originalValueOutput = new StringBuilder("");
             StringBuilder standardOutput = new StringBuilder("");
             StringBuilder errorOutput = new StringBuilder("");
 
             formatResults(result, standardOutput);
             formatErrors(result.errors, errorOutput);
 
-            if (standardOutput.length() + errorOutput.length() > 0) {
-                if (standardOutput.length() > 0) {
-                    output.append(originalValueOutput).append(standardOutput);
-                }
-                output.append(errorOutput);
-            }
+            output.append(standardOutput);
+            output.append(errorOutput);
         }
-    }
-
-    private void
-    formatOriginalValue(UnitValue originalValue, StringBuilder output) {
-        addUnitValueString(originalValue, output);
-        output.append(" = \n");
     }
 
     private void
     formatResults(ProcessingResult result, StringBuilder output) {
-        addUnitValueString(result.sourceValue, output);
-        output.append(" = ");
+        if (result.values.size() > 0) {
+            addUnitValueString(result.sourceValue, output);
+            output.append(" = ");
 
-        if (result.values.size() == 1) {
-            addUnitValueString(result.values.get(0), output);
-        }
-        else {
-            output.append("\n");
-            for (UnitValue value : result.values) {
-                output.append("> ");
-                addUnitValueString(value, output);
+            if (result.values.size() == 1) {
+                addUnitValueString(result.values.get(0), output);
+            }
+            else {
                 output.append("\n");
+                for (UnitValue value : result.values) {
+                    output.append("> ");
+                    addUnitValueString(value, output);
+                    output.append("\n");
+                }
             }
         }
     }
@@ -216,6 +201,16 @@ public class MessageHandler {
                 addUnitValueString(rangeError.getRangeLimitingValue(), output);
                 output.append(", the ");
                 output.append(rangeError.isMaximum() ? "maximum." : "minimum.");
+            }
+            else if (error instanceof MismatchedDimensionsException) {
+                MismatchedDimensionsException dimensionError =
+                        (MismatchedDimensionsException) error;
+
+                output.append("Can't convert units from ")
+                        .append(dimensionError.getUnitDimension().getName())
+                        .append(" to ")
+                        .append(dimensionError.getDestinationDimension().getName())
+                        .append(".");
             }
         }
     }
