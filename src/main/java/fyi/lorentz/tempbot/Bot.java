@@ -37,7 +37,7 @@ public class Bot {
             client.withGateway(gatewayClient -> {
                 gatewayClient.getEventDispatcher().on(ReadyEvent.class).subscribe(
                     ready -> {
-                        logger.info("Client connected");
+                        logger.info("Bot client connected");
                     }
                 );
 
@@ -60,6 +60,7 @@ public class Bot {
                         }
                     });
 
+                logger.info("Bot client initialization complete");
                 return gatewayClient.onDisconnect();
             }).block();
 
