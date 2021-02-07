@@ -166,6 +166,8 @@ public class MessageHandler {
 
             output.append(standardOutput);
             output.append(errorOutput);
+            // trailing newline is trimmed by Discord
+            output.append("\n");
         }
     }
 
