@@ -42,8 +42,8 @@ public class ProcessorBuilder {
         String lineBeginningOrWhitespace = "(?:^|\\s)";
 
         StringBuilder numberRegex = new StringBuilder("(?<")
-            .append(Processor.PATTERN_NUMBER_GROUP)
-            .append(">[-+]?[0-9]*\\.?[0-9]+)");
+                .append(Processor.PATTERN_NUMBER_GROUP)
+                .append(">[-+]?[0-9]*\\.?[0-9]+)");
 
         String sometimesASpace = "[ ]?";
 
@@ -78,9 +78,9 @@ public class ProcessorBuilder {
     private String
     buildLabelRegex(Collection<Dimension> dimensions) {
         return dimensions.stream()
-            .flatMap(dimension -> dimension.getUnitNames().stream())
-            .map(unitLabel -> Pattern.quote(unitLabel))
-            .collect(Collectors.joining("|"));
+                .flatMap(dimension -> dimension.getUnitNames().stream())
+                .map(unitLabel -> Pattern.quote(unitLabel))
+                .collect(Collectors.joining("|"));
     }
 
     public ProcessorBuilder
