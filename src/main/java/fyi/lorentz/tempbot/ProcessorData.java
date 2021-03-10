@@ -71,7 +71,6 @@ public class ProcessorData {
     }
 
     public static DimensionBuilder
-
     createSpeedDimension() {
         UnitBuilder milesPerHour = new UnitBuilder()
                 .setFullName("miles per hour")

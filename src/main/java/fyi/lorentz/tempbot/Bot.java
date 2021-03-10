@@ -36,29 +36,29 @@ public class Bot {
 
             client.withGateway(gatewayClient -> {
                 gatewayClient.getEventDispatcher().on(ReadyEvent.class).subscribe(
-                    ready -> {
-                        logger.info("Bot client connected");
-                    }
+                        ready -> {
+                            logger.info("Bot client connected");
+                        }
                 );
 
                 gatewayClient.getEventDispatcher()
-                    .on(MessageCreateEvent.class)
-                    .subscribe(messageCreateEvent -> {
-                        Message message = messageCreateEvent.getMessage();
-                        boolean shouldProcessMessage =
-                                message.getAuthor().isPresent()
-                                && !message.getAuthor().get().isBot();
-                        if (shouldProcessMessage) {
-                            // why the fuck is this necessary
-                            User me = messageCreateEvent.getClient().getSelf().block();
-                            // lack of a guild id means a private message without requiring
-                            // another API call for channel information
-                            new MessageHandler(processor, me).handle(
-                                    message,
-                                    !messageCreateEvent.getGuildId().isPresent()
-                            );
-                        }
-                    });
+                        .on(MessageCreateEvent.class)
+                        .subscribe(messageCreateEvent -> {
+                            Message message = messageCreateEvent.getMessage();
+                            boolean shouldProcessMessage =
+                                    message.getAuthor().isPresent()
+                                    && !message.getAuthor().get().isBot();
+                            if (shouldProcessMessage) {
+                                // why the fuck is this necessary
+                                User me = messageCreateEvent.getClient().getSelf().block();
+                                // lack of a guild id means a private message without
+                                // requiring another API call for channel information
+                                new MessageHandler(processor, me).handle(
+                                        message,
+                                        !messageCreateEvent.getGuildId().isPresent()
+                                );
+                            }
+                        });
 
                 logger.info("Bot client initialization complete");
                 return gatewayClient.onDisconnect();
