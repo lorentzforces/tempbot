@@ -29,10 +29,10 @@ public class Bot {
 
             Processor processor = ProcessorData.createProcesser();
 
-            DiscordClient client = DiscordClientBuilder.create(clientConfig.token).build();
+            DiscordClient client = DiscordClientBuilder.create(clientConfig.secret).build();
 
             // sanity output to stdout when manually running
-            System.out.println("clientconfig token: " + clientConfig.token);
+            System.out.println("clientconfig secret: " + clientConfig.secret);
 
             client.withGateway(gatewayClient -> {
                 gatewayClient.getEventDispatcher().on(ReadyEvent.class).subscribe(
@@ -82,7 +82,7 @@ public class Bot {
         JSONObject clientConfigJson = new JSONObject(clientConfigFile);
 
         ClientConfig result = new ClientConfig();
-        result.token = clientConfigJson.getString("token");
+        result.secret = clientConfigJson.getString("secret");
         result.clientId = clientConfigJson.getString("clientId");
         return result;
     }

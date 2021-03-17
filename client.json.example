@@ -1,4 +1,4 @@
 {
     "clientId": "CLIENT-ID-HERE",
-    "token": "BOT-TOKEN-HERE"
+    "secret": "BOT-SECRET-HERE"
 }

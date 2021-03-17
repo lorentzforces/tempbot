@@ -2,6 +2,6 @@ package fyi.lorentz.tempbot;
 
 class
 ClientConfig {
-    String token;
+    String secret;
     String clientId;
 }
