@@ -5,36 +5,36 @@ apply plugin: 'application'
 mainClassName = "fyi.lorentz.tempbot.Bot"
 
 repositories {
-    jcenter()
-    mavenCentral()
+	jcenter()
+	mavenCentral()
 }
 
 dependencies {
-    // TODO: inspect dependency types
-    implementation 'com.discord4j:discord4j-core:3.1.0'
-    implementation "org.json:json:20171018"
-    implementation "org.apache.logging.log4j:log4j-api:2.11.2"
-    implementation "org.apache.logging.log4j:log4j-core:2.11.2"
-    testImplementation "junit:junit-dep:4.11"
+	// TODO: inspect dependency types
+	implementation 'com.discord4j:discord4j-core:3.1.0'
+	implementation "org.json:json:20171018"
+	implementation "org.apache.logging.log4j:log4j-api:2.11.2"
+	implementation "org.apache.logging.log4j:log4j-core:2.11.2"
+	testImplementation "junit:junit-dep:4.11"
 }
 
 compileJava {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+	sourceCompatibility = 1.8
+	targetCompatibility = 1.8
 }
 
 test {
-    testLogging {
-        outputs.upToDateWhen { false }
-        showStandardStreams = true
-    }
+	testLogging {
+		outputs.upToDateWhen { false }
+		showStandardStreams = true
+	}
 }
 
 jar {
-    manifest {
-        attributes "Main-Class": mainClassName
-        attributes "Multi-Release": true
-    }
+	manifest {
+		attributes "Main-Class": mainClassName
+		attributes "Multi-Release": true
+	}
 
-    from configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	from configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
 }
