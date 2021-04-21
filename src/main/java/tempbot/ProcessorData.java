@@ -1,9 +1,9 @@
-package fyi.lorentz.tempbot;
+package tempbot;
 
-import fyi.lorentz.tempbot.engine.DimensionBuilder;
-import fyi.lorentz.tempbot.engine.Processor;
-import fyi.lorentz.tempbot.engine.ProcessorBuilder;
-import fyi.lorentz.tempbot.engine.UnitBuilder;
+import tempbot.engine.DimensionBuilder;
+import tempbot.engine.Processor;
+import tempbot.engine.ProcessorBuilder;
+import tempbot.engine.UnitBuilder;
 
 public class ProcessorData {
 

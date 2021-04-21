@@ -1,4 +1,4 @@
-package fyi.lorentz.tempbot.engine;
+package tempbot.engine;
 
 public class MismatchedDimensionsException extends Exception {
 	private Dimension unitDimension;

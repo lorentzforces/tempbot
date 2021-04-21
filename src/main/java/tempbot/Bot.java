@@ -1,4 +1,4 @@
-package fyi.lorentz.tempbot;
+package tempbot;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
@@ -6,15 +6,15 @@ import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
-import fyi.lorentz.tempbot.engine.Processor;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
+import tempbot.engine.Processor;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

@@ -1,4 +1,4 @@
-package fyi.lorentz.tempbot.engine;
+package tempbot.engine;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -1,11 +1,11 @@
-package fyi.lorentz.tempbot.engine;
+package tempbot.engine;
 
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import static fyi.lorentz.tempbot.Constants.COMPARISON_EPSILON;
 import static org.junit.Assert.assertEquals;
+import static tempbot.Constants.COMPARISON_EPSILON;
 
 public class TestProcessor {
 

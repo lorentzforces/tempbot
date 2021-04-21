@@ -1,22 +1,22 @@
-package fyi.lorentz.tempbot;
+package tempbot;
 
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
-import fyi.lorentz.tempbot.engine.Dimension;
-import fyi.lorentz.tempbot.engine.ProcessingResult;
-import fyi.lorentz.tempbot.engine.Processor;
-import fyi.lorentz.tempbot.engine.MismatchedDimensionsException;
-import fyi.lorentz.tempbot.engine.UnitRangeException;
-import fyi.lorentz.tempbot.engine.UnitValue;
 import java.text.DecimalFormat;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import tempbot.engine.Dimension;
+import tempbot.engine.MismatchedDimensionsException;
+import tempbot.engine.ProcessingResult;
+import tempbot.engine.Processor;
+import tempbot.engine.UnitRangeException;
+import tempbot.engine.UnitValue;
 
-import static fyi.lorentz.tempbot.Constants.PRECISION;
+import static tempbot.Constants.PRECISION;
 
 public class MessageHandler {
 

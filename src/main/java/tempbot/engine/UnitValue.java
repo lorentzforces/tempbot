@@ -1,6 +1,6 @@
-package fyi.lorentz.tempbot.engine;
+package tempbot.engine;
 
-import static fyi.lorentz.tempbot.Util.doublesAreEqual;
+import static tempbot.Util.doublesAreEqual;
 
 public class UnitValue {
 

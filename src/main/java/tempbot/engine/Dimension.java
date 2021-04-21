@@ -1,4 +1,4 @@
-package fyi.lorentz.tempbot.engine;
+package tempbot.engine;
 
 import java.util.HashMap;
 import java.util.List;

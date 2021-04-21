@@ -1,4 +1,4 @@
-package fyi.lorentz.tempbot.engine;
+package tempbot.engine;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static fyi.lorentz.tempbot.Constants.MAX_CONVERSIONS;
+import static tempbot.Constants.MAX_CONVERSIONS;
 
 public class Processor {
 

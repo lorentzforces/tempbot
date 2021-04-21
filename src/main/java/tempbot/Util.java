@@ -1,6 +1,6 @@
-package fyi.lorentz.tempbot;
+package tempbot;
 
-import static fyi.lorentz.tempbot.Constants.COMPARISON_EPSILON;
+import static tempbot.Constants.COMPARISON_EPSILON;
 
 public final class Util {
 

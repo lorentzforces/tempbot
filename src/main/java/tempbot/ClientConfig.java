@@ -1,4 +1,4 @@
-package fyi.lorentz.tempbot;
+package tempbot;
 
 class
 ClientConfig {
