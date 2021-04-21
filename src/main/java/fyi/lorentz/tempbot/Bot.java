@@ -16,6 +16,8 @@ import org.apache.logging.log4j.LogManager;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class Bot {
 
 	private static final Logger logger = LogManager.getLogger();
@@ -78,7 +80,7 @@ public class Bot {
 	private static ClientConfig
 	loadClientConfig() throws IOException, JSONException {
 		Path configFilePath = FileSystems.getDefault().getPath(CONFIG_FILENAME);
-		String clientConfigFile = new String(Files.readAllBytes(configFilePath));
+		String clientConfigFile = new String(Files.readAllBytes(configFilePath), UTF_8);
 		JSONObject clientConfigJson = new JSONObject(clientConfigFile);
 
 		ClientConfig result = new ClientConfig();

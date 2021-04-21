@@ -21,10 +21,10 @@ public class Processor {
 	private final List<Dimension> dimensions;
 
 	public Processor(
-		Pattern masterPattern,
-		Pattern specificConversionPattern,
-		List<Dimension> dimensions,
-		Map<String, Dimension> dimensionMap
+			Pattern masterPattern,
+			Pattern specificConversionPattern,
+			List<Dimension> dimensions,
+			Map<String, Dimension> dimensionMap
 	) {
 		this.masterPattern = masterPattern;
 		this.specificConversionPattern = specificConversionPattern;
@@ -63,11 +63,7 @@ public class Processor {
 					);
 
 			if (!valueExists && result.sourceValue != null) {
-				doSpecificConversion(
-						message, mainMatcher,
-						specificMatcher, result
-				);
-
+				doSpecificConversion(mainMatcher, specificMatcher, result);
 				if (
 						!result.isSpecificConversion
 						&& (
@@ -98,7 +94,6 @@ public class Processor {
 
 	private void
 	doSpecificConversion(
-			String message,
 			Matcher mainMatcher,
 			Matcher specificMatcher,
 			ProcessingResult result

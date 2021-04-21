@@ -12,15 +12,11 @@ public class UnitBuilder {
 	private boolean isDefaultConversionResult;
 	private Set<String> detectableNames;
 
-	private Double minValue;
-	private Double maxValue;
 	private Function<Double, Double> convertTo;
 	private Function<Double, Double> convertFrom;
 
 	public UnitBuilder() {
 		detectableNames = new HashSet<>();
-		minValue = null;
-		maxValue = null;
 	}
 
 	public Unit
