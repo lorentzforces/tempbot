@@ -9,4 +9,6 @@ public final class Constants {
 
 	public static final int MAX_CONVERSIONS = 10;
 
+	public static final String CONFIG_FILENAME = "client.yml";
+
 }
