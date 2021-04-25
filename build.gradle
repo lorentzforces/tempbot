@@ -54,6 +54,7 @@ test {
 }
 
 jar {
+	destinationDirectory = file("$rootDir")
 	manifest {
 		attributes "Main-Class": mainClassName
 		attributes "Multi-Release": true
