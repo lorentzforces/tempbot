@@ -1,3 +1,5 @@
+import net.ltgt.gradle.errorprone.CheckSeverity
+
 // pretty much all just setup for errorprone
 buildscript {
     ext{
@@ -26,17 +28,22 @@ repositories {
 }
 
 dependencies {
-	implementation 'com.discord4j:discord4j-core:3.1.0'
-	implementation "org.json:json:20171018"
+	implementation "com.discord4j:discord4j-core:3.1.0"
+	implementation "org.snakeyaml:snakeyaml-engine:2.3"
 	implementation "org.apache.logging.log4j:log4j-api:2.11.2"
 	implementation "org.apache.logging.log4j:log4j-core:2.11.2"
 	testImplementation "junit:junit-dep:4.11"
 	errorprone("com.google.errorprone:error_prone_core:$errorproneVersion")
 }
 
+
 compileJava {
 	sourceCompatibility = 11
 	targetCompatibility = 11
+
+	options.errorprone.checks = [
+		RemoveUnusedImports: CheckSeverity.ERROR
+	]
 }
 
 test {
@@ -47,6 +54,7 @@ test {
 }
 
 jar {
+	destinationDirectory = file("$rootDir")
 	manifest {
 		attributes "Main-Class": mainClassName
 		attributes "Multi-Release": true

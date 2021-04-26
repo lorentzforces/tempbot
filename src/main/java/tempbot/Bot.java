@@ -7,34 +7,32 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.snakeyaml.engine.v2.api.Load;
+import org.snakeyaml.engine.v2.api.LoadSettings;
 import tempbot.engine.Processor;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static tempbot.Constants.CONFIG_FILENAME;
 
 public class Bot {
 
 	private static final Logger logger = LogManager.getLogger();
 
-	private static final String CONFIG_FILENAME = "client.json";
-
 	public static void
 	main(String[] args) {
 		try {
-			ClientConfig clientConfig = loadClientConfig();
+			ClientConfig clientConfig = loadClientConfigYaml();
 
 			Processor processor = ProcessorData.createProcesser();
 
 			DiscordClient client = DiscordClientBuilder.create(clientConfig.secret).build();
-
-			// sanity output to stdout when manually running
-			System.out.println("clientconfig secret: " + clientConfig.secret);
 
 			client.withGateway(gatewayClient -> {
 				gatewayClient.getEventDispatcher().on(ReadyEvent.class).subscribe(
@@ -68,25 +66,54 @@ public class Bot {
 
 		}
 		catch (IOException e) {
-			// TODO: include specific information about what the specific issue
-			// with the configuration was
-			logger.fatal("Error reading client configuration client.json", e);
-		}
-		catch (JSONException e) {
-			logger.fatal("Could not parse client.json", e);
+			logger.fatal("Error reading client configuration " + CONFIG_FILENAME, e);
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private static ClientConfig
-	loadClientConfig() throws IOException, JSONException {
+	loadClientConfigYaml() throws IOException {
 		Path configFilePath = FileSystems.getDefault().getPath(CONFIG_FILENAME);
-		String clientConfigFile = new String(Files.readAllBytes(configFilePath), UTF_8);
-		JSONObject clientConfigJson = new JSONObject(clientConfigFile);
+		InputStream clientConfigFile =
+				Files.newInputStream(configFilePath, StandardOpenOption.READ);
+		Load yamlLoader = new Load(
+				LoadSettings.builder().setLabel("Tempbot configuration file").build()
+		);
+		Map<String, String> configProperties =
+				(Map<String, String>) yamlLoader.loadFromInputStream(clientConfigFile);
 
 		ClientConfig result = new ClientConfig();
-		result.secret = clientConfigJson.getString("secret");
-		result.clientId = clientConfigJson.getString("clientId");
+		result.secret = fetchStringConfigProperty(configProperties, "secret");
+		result.clientId = fetchStringConfigProperty(configProperties, "clientId");
 		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static String
+	fetchStringConfigProperty(
+			Map<String, ?> properties,
+			String propertyName
+	) {
+		String propertyValue = null;
+		try {
+			propertyValue = (String) properties.get(propertyName);
+		}
+		catch (ClassCastException e) {
+			logger.fatal(
+					"Property type mismatch in " + CONFIG_FILENAME + " : "
+					+ e.getMessage());
+			System.exit(1);
+		}
+
+		if (propertyValue == null) {
+			logger.fatal(
+					"Could not find property " + propertyName
+					+ " in configuration "
+					+ CONFIG_FILENAME);
+			System.exit(1);
+		}
+
+		return propertyValue;
 	}
 
 }
