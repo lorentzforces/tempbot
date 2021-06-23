@@ -1,19 +1,6 @@
-import net.ltgt.gradle.errorprone.CheckSeverity
-
-// pretty much all just setup for errorprone
-buildscript {
-    ext{
-        errorproneVersion = '2.3.3'
-    }
-    repositories {
-        mavenCentral()
-    }
-}
-
 plugins {
 	id "java"
 	id "application"
-	id("net.ltgt.errorprone") version "2.0.1"
 }
 
 apply plugin: 'java'
@@ -33,17 +20,12 @@ dependencies {
 	implementation "org.apache.logging.log4j:log4j-api:2.11.2"
 	implementation "org.apache.logging.log4j:log4j-core:2.11.2"
 	testImplementation "junit:junit-dep:4.11"
-	errorprone("com.google.errorprone:error_prone_core:$errorproneVersion")
 }
 
 
 compileJava {
 	sourceCompatibility = 11
 	targetCompatibility = 11
-
-	options.errorprone.checks = [
-		RemoveUnusedImports: CheckSeverity.ERROR
-	]
 }
 
 test {
