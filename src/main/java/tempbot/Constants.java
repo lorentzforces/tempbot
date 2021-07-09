@@ -9,6 +9,10 @@ public final class Constants {
 
 	public static final int MAX_CONVERSIONS = 10;
 
-	public static final String CONFIG_FILENAME = "client.yml";
+	public static final String CONFIG_FILE_NAME = "client.yml";
+
+	public enum LoggingLevel {
+		FATAL, ERROR, WARN, INFO, DEBUG, TRACE
+	}
 
 }

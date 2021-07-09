@@ -1,0 +1,3 @@
+testStringProperty: "test string property value"
+testEnumProperty: "DEBUG"
+testInvalidEnumProperty: "HAHA LOL"
