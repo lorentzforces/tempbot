@@ -12,8 +12,13 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import tempbot.Constants.LoggingLevel;
 import tempbot.config.ClientConfig;
 import tempbot.config.ConfigLoadException;
 import tempbot.config.ConfigLoader;
@@ -29,8 +34,7 @@ public class Bot {
 	public static void
 	main(String[] args) {
 		ClientConfig config = loadClientConfig();
-		// NOCHECKIN
-		// TODO: initialize logging based on config
+		setLogLevels(config.loggingLevel);
 		DiscordClient client = DiscordClientBuilder.create(config.secret).build();
 		registerDiscordHandlersAndBlock(client);
 	}
@@ -53,7 +57,18 @@ public class Bot {
 			panic(e.getMessage());
 		}
 
+		logger.info(String.format("Loaded client configuration from %s", CONFIG_FILE_NAME));
 		return result;
+	}
+
+	private static void
+	setLogLevels(LoggingLevel logLevel) {
+		logger.info(String.format("Updating logging level to %s per client config", logLevel.toString()));
+		LoggerContext logContext = (LoggerContext) LogManager.getContext(false);
+		Configuration logConfig = logContext.getConfiguration();
+		LoggerConfig rootLogConfig = logConfig.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+		rootLogConfig.setLevel(Level.toLevel(logLevel.name()));
+		logContext.updateLoggers();
 	}
 
 	private static void
@@ -75,7 +90,6 @@ public class Bot {
 								message.getAuthor().isPresent()
 								&& !message.getAuthor().get().isBot();
 						if (shouldProcessMessage) {
-							// why the fuck is this necessary
 							User me = messageCreateEvent.getClient().getSelf().block();
 							// lack of a guild id means a private message without
 							// requiring another API call for channel information

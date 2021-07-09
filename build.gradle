@@ -16,9 +16,10 @@ repositories {
 
 dependencies {
 	implementation "com.discord4j:discord4j-core:3.1.0"
-	implementation "org.snakeyaml:snakeyaml-engine:2.3"
-	implementation "org.apache.logging.log4j:log4j-api:2.11.2"
-	implementation "org.apache.logging.log4j:log4j-core:2.11.2"
+	implementation "org.snakeyaml:snakeyaml-engine:2.3+"
+	implementation "org.apache.logging.log4j:log4j-api:2.11.+"
+	implementation "org.apache.logging.log4j:log4j-core:2.11.+"
+	implementation "org.apache.logging.log4j:log4j-slf4j-impl:2.11.+"
 	testImplementation "junit:junit-dep:4.11"
 }
 
@@ -35,6 +36,7 @@ test {
 		// actually show messages from tests (sigh)
 		showStandardStreams = true
 
+		// TODO: make this nicer
 		// print summary stats of test runs
 		afterSuite { desc, result ->
 			if (!desc.parent) { // will match the outermost suite

@@ -3,6 +3,7 @@ package tempbot.config;
 import java.io.InputStream;
 import org.junit.Before;
 import org.junit.Test;
+import tempbot.Constants.LoggingLevel;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,6 +31,7 @@ ConfigLoaderTest {
 
 		assertThat(clientConfig.clientId, is("test-client-id"));
 		assertThat(clientConfig.secret, is("test-secret"));
+		assertThat(clientConfig.loggingLevel, is(LoggingLevel.DEBUG));
 	}
 
 }
