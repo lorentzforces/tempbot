@@ -12,35 +12,30 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import tempbot.Constants.LoggingLevel;
+import org.tinylog.Logger;
+import org.tinylog.configuration.Configuration;
 import tempbot.config.ClientConfig;
 import tempbot.config.ConfigLoadException;
 import tempbot.config.ConfigLoader;
 import tempbot.engine.Processor;
 
 import static tempbot.Constants.CONFIG_FILE_NAME;
-import static tempbot.Util.panic;
+import static tempbot.Util.logToStdOut;
+import static tempbot.Util.panicToStdErr;
 
 public class Bot {
-
-	private static final Logger logger = LogManager.getLogger();
 
 	public static void
 	main(String[] args) {
 		ClientConfig config = loadClientConfig();
-		setLogLevels(config.loggingLevel);
+		setLogSettings(config);
 		DiscordClient client = DiscordClientBuilder.create(config.secret).build();
 		registerDiscordHandlersAndBlock(client);
 	}
 
 	private static ClientConfig
 	loadClientConfig() {
+		logToStdOut(String.format("Attempting to load configuration from %s", CONFIG_FILE_NAME));
 		Path configFilePath = FileSystems.getDefault().getPath(CONFIG_FILE_NAME);
 
 		ClientConfig result = null;
@@ -48,27 +43,22 @@ public class Bot {
 			InputStream clientConfigFile =
 					Files.newInputStream(configFilePath, StandardOpenOption.READ);
 
-			result = ConfigLoader.loadConfigurationFromFile(clientConfigFile);
+			result = ConfigLoader.loadConfigurationFromFile(clientConfigFile, CONFIG_FILE_NAME);
 		}
 		catch (IOException e) {
-			panic(e.getMessage(), e);
+			panicToStdErr(e.getMessage(), e);
 		}
 		catch (ConfigLoadException e) {
-			panic(e.getMessage());
+			panicToStdErr(e.getMessage());
 		}
 
-		logger.info(String.format("Loaded client configuration from %s", CONFIG_FILE_NAME));
+		logToStdOut(String.format("Loaded client configuration from %s", CONFIG_FILE_NAME));
 		return result;
 	}
 
 	private static void
-	setLogLevels(LoggingLevel logLevel) {
-		logger.info(String.format("Updating logging level to %s per client config", logLevel.toString()));
-		LoggerContext logContext = (LoggerContext) LogManager.getContext(false);
-		Configuration logConfig = logContext.getConfiguration();
-		LoggerConfig rootLogConfig = logConfig.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
-		rootLogConfig.setLevel(Level.toLevel(logLevel.name()));
-		logContext.updateLoggers();
+	setLogSettings(ClientConfig config) {
+		Configuration.replace(LogConfigurer.configureLogging(config.loggingLevel, config.logOutput));
 	}
 
 	private static void
@@ -78,7 +68,7 @@ public class Bot {
 		client.withGateway(gatewayClient -> {
 			gatewayClient.getEventDispatcher().on(ReadyEvent.class).subscribe(
 					ready -> {
-						logger.info("Bot client connected");
+						Logger.info("Bot client connected");
 					}
 			);
 
@@ -100,7 +90,7 @@ public class Bot {
 						}
 					});
 
-			logger.info("Bot client initialization complete");
+			Logger.info("Bot client initialization complete");
 			return gatewayClient.onDisconnect();
 		}).block();
 	}

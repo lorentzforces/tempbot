@@ -7,8 +7,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.tinylog.Logger;
 import tempbot.engine.Dimension;
 import tempbot.engine.MismatchedDimensionsException;
 import tempbot.engine.ProcessingResult;
@@ -19,8 +18,6 @@ import tempbot.engine.UnitValue;
 import static tempbot.Constants.PRECISION;
 
 public class MessageHandler {
-
-	private static final Logger logger = LogManager.getLogger(MessageHandler.class);
 
 	private static final String PATTERN_DIMENSION_GROUP = "dimension";
 
@@ -69,7 +66,7 @@ public class MessageHandler {
 	public void
 	handle(Message message, boolean isPrivateMessage) {
 		String messageContent = message.getContent();
-		logger.debug("Message handling: \"" + messageContent + "\"");
+		Logger.debug("Message handling: \"" + messageContent + "\"");
 		if (messageContent.length() == 0) {
 			return;
 		}

@@ -1,3 +1,4 @@
 clientId: "test-client-id"
 secret: "test-secret"
 loggingLevel: "DEBUG"
+logOutput: "CONSOLE_AND_FILE"

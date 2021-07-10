@@ -3,6 +3,7 @@ package tempbot.config;
 import java.io.InputStream;
 import org.junit.Before;
 import org.junit.Test;
+import tempbot.Constants.LogOutput;
 import tempbot.Constants.LoggingLevel;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -27,11 +28,12 @@ ConfigLoaderTest {
 	@Test
 	public void
 	loadingConfigurationProducesConfigObject() throws Exception {
-		ClientConfig clientConfig = ConfigLoader.loadConfigurationFromFile(testClientConfigFileStream);
+		ClientConfig clientConfig = ConfigLoader.loadConfigurationFromFile(testClientConfigFileStream, "TEST CONFIG FILE");
 
 		assertThat(clientConfig.clientId, is("test-client-id"));
 		assertThat(clientConfig.secret, is("test-secret"));
 		assertThat(clientConfig.loggingLevel, is(LoggingLevel.DEBUG));
+		assertThat(clientConfig.logOutput, is(LogOutput.CONSOLE_AND_FILE));
 	}
 
 }

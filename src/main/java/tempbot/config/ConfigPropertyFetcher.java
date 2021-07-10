@@ -11,7 +11,7 @@ import java.util.Optional;
 import org.snakeyaml.engine.v2.api.Load;
 import org.snakeyaml.engine.v2.api.LoadSettings;
 
-public class ConfigPropertyFetcher {
+class ConfigPropertyFetcher {
 
 	private String readableFileIdentifier;
 	private Map<String, String> rawConfigProperties;
@@ -73,7 +73,7 @@ public class ConfigPropertyFetcher {
 	) throws ConfigLoadException {
 		return fetchConfigProperty(type, name).orElseThrow(() ->
 			new ConfigLoadException(String.format(
-					"Required property not found: expected proeprty \"%s\" in configuration %s",
+					"Required property not found: expected property \"%s\" in configuration %s",
 					name,
 					readableFileIdentifier
 			)));
@@ -100,7 +100,8 @@ public class ConfigPropertyFetcher {
 		}
 		catch (ClassCastException e) {
 			throw new ConfigLoadException(String.format(
-					"Property type mismatch: found [%s], expected a String representing a [%s] in configuration %s",
+					"Property type mismatch: found [%s], expected a String representing a [%s] "
+							+ "in configuration %s",
 					rawProperty.getClass().getCanonicalName(),
 					type.getCanonicalName(),
 					readableFileIdentifier
@@ -114,7 +115,8 @@ public class ConfigPropertyFetcher {
 		}
 		catch (IllegalArgumentException e) {
 			throw new ConfigLoadException(String.format(
-					"Invalid property enum value: \"%s\" is not a valid value for property \"%s\" in configuration %s",
+					"Invalid property enum value: \"%s\" is not a valid value for property \"%s\" "
+							+ "in configuration %s",
 					stringValue,
 					type.getCanonicalName(),
 					readableFileIdentifier
@@ -135,11 +137,13 @@ public class ConfigPropertyFetcher {
 			result = type.cast(rawProperty);
 		}
 		catch (ClassCastException e) {
-			throw new ConfigLoadException(
-					"Property type mismatch: found " + rawProperty.getClass().getCanonicalName()
-					+ ", expected a String representing a " + type.getCanonicalName()
-					+ " in configuration " + readableFileIdentifier
-			);
+			throw new ConfigLoadException(String.format(
+					"Property type mismatch: found [%s], expected a String representing a [%s] "
+							+ "in configuration %s",
+					rawProperty.getClass().getCanonicalName(),
+					type.getCanonicalName(),
+					readableFileIdentifier
+			));
 		}
 
 		// we throw exceptions any time this could be null, so we know by this point it isn't

@@ -2,12 +2,7 @@ package tempbot;
 
 import static tempbot.Constants.COMPARISON_EPSILON;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public final class Util {
-
-	private static final Logger logger = LogManager.getLogger();
 
 	private Util() {
 		// private constructor
@@ -32,14 +27,20 @@ public final class Util {
 	}
 
 	public static void
-	panic(String errorMessage) {
-		logger.fatal(errorMessage);
+	logToStdOut(String message) {
+		System.out.println(message);
+	}
+
+	public static void
+	panicToStdErr(String message) {
+		System.err.println(message);
 		System.exit(1);
 	}
 
 	public static void
-	panic(String errorMessage, Throwable t) {
-		logger.fatal(errorMessage, t);
+	panicToStdErr(String message, Throwable t) {
+		System.err.println(message);
+		t.printStackTrace();
 		System.exit(1);
 	}
 
