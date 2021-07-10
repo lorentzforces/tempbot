@@ -10,7 +10,6 @@ apply plugin: 'application'
 mainClassName = "tempbot.Bot"
 
 repositories {
-	jcenter()
 	mavenCentral()
 }
 
