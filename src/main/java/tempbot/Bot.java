@@ -58,7 +58,11 @@ public class Bot {
 
 	private static void
 	setLogSettings(ClientConfig config) {
-		Configuration.replace(LogConfigurer.configureLogging(config.loggingLevel, config.logOutput));
+		Configuration.replace(LogConfigurer.configureLogging(
+				config.logLevel,
+				config.logOutput,
+				config.logFormat
+		));
 	}
 
 	private static void

@@ -1,8 +1,9 @@
 package tempbot.config;
 
 import java.io.InputStream;
+import tempbot.Constants.LogFormat;
+import tempbot.Constants.LogLevel;
 import tempbot.Constants.LogOutput;
-import tempbot.Constants.LoggingLevel;
 
 public class ConfigLoader {
 
@@ -16,8 +17,9 @@ public class ConfigLoader {
 		ClientConfig config = new ClientConfig();
 		config.clientId = fetcher.requireConfigProperty(String.class, "clientId");
 		config.secret = fetcher.requireConfigProperty(String.class, "secret");
-		config.loggingLevel = fetcher.requireConfigProperty(LoggingLevel.class, "loggingLevel");
+		config.logLevel = fetcher.requireConfigProperty(LogLevel.class, "loggingLevel");
 		config.logOutput = fetcher.requireConfigProperty(LogOutput.class, "logOutput");
+		config.logFormat = fetcher.requireConfigProperty(LogFormat.class, "logFormat");
 
 		return config;
 	}

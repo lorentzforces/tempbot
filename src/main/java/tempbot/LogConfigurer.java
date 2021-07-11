@@ -2,8 +2,9 @@ package tempbot;
 
 import java.util.HashMap;
 import java.util.Map;
+import tempbot.Constants.LogFormat;
+import tempbot.Constants.LogLevel;
 import tempbot.Constants.LogOutput;
-import tempbot.Constants.LoggingLevel;
 
 import static tempbot.Constants.LOG_FILE_NAME;
 import static tempbot.Util.logToStdOut;
@@ -13,26 +14,31 @@ public class LogConfigurer {
 	protected static final String CONSOLE_WRITER_NAME = "writerConsole";
 	protected static final String FILE_WRITER_NAME = "writerFile";
 
+	protected static final String VERBOSE_FORMAT =
+			"{date} {class-name}:{line} {level} {pipe} {message}";
+	protected static final String CONCISE_FORMAT = "{date} {level} {pipe} {message}";
+
 	/**
-	 * Outputs Tinylog configuration
+	 * Outputs Tinylog configuration, ready for consumption by
+	 * {@link org.tinylog.configuration.Configuration#replace}
 	 */
 	public static Map<String, String>
-	configureLogging(LoggingLevel logLevel, LogOutput logOutput) {
-		printLoggingConfiguration(logLevel, logOutput);
+	configureLogging(LogLevel logLevel, LogOutput logOutput, LogFormat logFormat) {
+		printLoggingConfiguration(logLevel, logOutput, logFormat);
 		Map<String, String> configuredProperties = new HashMap<>();
 
 		configuredProperties.put("level", logLevel.name());
 
 		switch (logOutput) {
 			case CONSOLE_AND_FILE: {
-				addConsoleWriter(configuredProperties);
-				addFileWriter(configuredProperties);
+				addConsoleWriter(configuredProperties, logFormat);
+				addFileWriter(configuredProperties, logFormat);
 			} break;
 			case CONSOLE: {
-				addConsoleWriter(configuredProperties);
+				addConsoleWriter(configuredProperties, logFormat);
 			} break;
 			case FILE: {
-				addFileWriter(configuredProperties);
+				addFileWriter(configuredProperties, logFormat);
 			} break;
 		}
 
@@ -40,21 +46,28 @@ public class LogConfigurer {
 	}
 
 	private static void
-	printLoggingConfiguration(LoggingLevel logLevel, LogOutput logOutput) {
+	printLoggingConfiguration(LogLevel logLevel, LogOutput logOutput, LogFormat logFormat) {
 		logToStdOut("Initializing tinylog with the following parameters:");
 		logToStdOut(String.format("    log level: %s", logLevel.toString()));
-		logToStdOut(String.format("    log ouptut: %s", logOutput.toString()));
+		logToStdOut(String.format("    log output: %s", logOutput.toString()));
+		logToStdOut(String.format("    log format: %s", logFormat.toString()));
 	}
 
 	private static void
-	addConsoleWriter(Map<String, String> configuredProperties) {
+	addConsoleWriter(Map<String, String> configuredProperties, LogFormat logFormat) {
 		configuredProperties.put(CONSOLE_WRITER_NAME, "console");
+		configuredProperties.put(CONSOLE_WRITER_NAME + ".format", getFormatString(logFormat));
 	}
 
 	private static void
-	addFileWriter(Map<String, String> configuredProperties) {
+	addFileWriter(Map<String, String> configuredProperties, LogFormat logFormat) {
 		configuredProperties.put(FILE_WRITER_NAME, "file");
 		configuredProperties.put(FILE_WRITER_NAME + ".file", LOG_FILE_NAME);
+		configuredProperties.put(FILE_WRITER_NAME + ".format", getFormatString(logFormat));
+	}
+
+	private static String getFormatString(LogFormat logFormat) {
+		return logFormat.equals(LogFormat.DEV) ? VERBOSE_FORMAT : CONCISE_FORMAT;
 	}
 
 }

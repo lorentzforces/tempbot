@@ -4,7 +4,7 @@ import java.io.InputStream;
 import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
-import tempbot.Constants.LoggingLevel;
+import tempbot.Constants.LogLevel;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -38,17 +38,17 @@ public class ConfigPropertyFetcherTest {
 	@Test
 	public void
 	testEnumPropertyIsLoaded() throws Exception {
-		Optional<LoggingLevel> enumPropertyValue =
-				configLoader.fetchConfigProperty(LoggingLevel.class, "testEnumProperty");
+		Optional<LogLevel> enumPropertyValue =
+				configLoader.fetchConfigProperty(LogLevel.class, "testEnumProperty");
 
 		assertThat(enumPropertyValue.isPresent(), is(true));
-		assertThat(enumPropertyValue.orElseThrow(), is(LoggingLevel.DEBUG));
+		assertThat(enumPropertyValue.orElseThrow(), is(LogLevel.DEBUG));
 	}
 
 	@Test(expected = ConfigLoadException.class)
 	public void
 	testEnumPropertyWithInvalidValueThrows() throws Exception {
-		configLoader.fetchConfigProperty(LoggingLevel.class, "testInvalidEnumProperty");
+		configLoader.fetchConfigProperty(LogLevel.class, "testInvalidEnumProperty");
 	}
 
 	@Test
@@ -63,7 +63,7 @@ public class ConfigPropertyFetcherTest {
 	@Test(expected = ConfigLoadException.class)
 	public void
 	testMissingRequiredPropertyThrows() throws Exception {
-		configLoader.requireConfigProperty(LoggingLevel.class, "testInvalidEnumProperty");
+		configLoader.requireConfigProperty(LogLevel.class, "testInvalidEnumProperty");
 	}
 
 }

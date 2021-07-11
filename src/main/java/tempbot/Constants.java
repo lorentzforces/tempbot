@@ -11,7 +11,7 @@ public final class Constants {
 
 	public static final String CONFIG_FILE_NAME = "client.yml";
 
-	public enum LoggingLevel {
+	public enum LogLevel {
 		ERROR, WARN, INFO, DEBUG, TRACE
 	}
 
@@ -20,5 +20,9 @@ public final class Constants {
 	}
 
 	public static final String LOG_FILE_NAME = "tempbot.log";
+
+	public enum LogFormat {
+		DEV, NON_DEV
+	}
 
 }

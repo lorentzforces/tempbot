@@ -1,13 +1,16 @@
 package tempbot.config;
 
+import tempbot.Constants.LogFormat;
+import tempbot.Constants.LogLevel;
 import tempbot.Constants.LogOutput;
-import tempbot.Constants.LoggingLevel;
 
 public class ClientConfig {
 
 	public String secret;
 	public String clientId;
-	public LoggingLevel loggingLevel;
+
+	public LogLevel logLevel;
 	public LogOutput logOutput;
+	public LogFormat logFormat;
 
 }
