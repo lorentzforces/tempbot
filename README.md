@@ -8,7 +8,7 @@ TempBot was originally created as a temperature-conversion bot. As time goes on,
 ### Requirements:
 
 - an internet connection to download dependencies (only on first build or when dependencies have changed)
-- Java `11` executables available to Gradle
+- Java `17` executables available to Gradle
 
 To build the project without running it, you can run the following command:
 ```
@@ -17,7 +17,7 @@ To build the project without running it, you can run the following command:
 
 The output is a single file named `tempbot.jar` in the project's root directory and includes all dependencies.
 
-Currently, the default log level is set by the default logger in `src/main/resource/log4j2.xml`. In order to change the log level, you will have to either manually change this file or set the logging level via system property. (There is an outstanding issue to allow setting the log level depending on build/environment.)
+The logging level is by default set to its more-verbose `DEV` mode and directs to standard output. You may check the code for alternative options, but for development the default options in the example configuration file are probably what you want.
 
 ## Running the project
 

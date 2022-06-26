@@ -14,7 +14,8 @@ repositories {
 }
 
 dependencies {
-	implementation "com.discord4j:discord4j-core:3.1.0"
+	// TODO(current): bump discord4j version to 3.2.2
+	implementation "com.discord4j:discord4j-core:3.2.2"
 	implementation "org.snakeyaml:snakeyaml-engine:2.3+"
 	implementation "org.tinylog:tinylog-api:2.3.+"
 	implementation "org.tinylog:tinylog-impl:2.3.+"
@@ -22,10 +23,10 @@ dependencies {
 	testImplementation "junit:junit-dep:4.11"
 }
 
-
+// TODO(current): bump to Java 17
 compileJava {
-	sourceCompatibility = 11
-	targetCompatibility = 11
+	sourceCompatibility = 17
+	targetCompatibility = 17
 }
 
 test {
@@ -51,6 +52,7 @@ test {
 
 jar {
 	destinationDirectory = file("$rootDir")
+	duplicatesStrategy = DuplicatesStrategy.INCLUDE
 	manifest {
 		attributes "Main-Class": mainClassName
 		attributes "Multi-Release": true
