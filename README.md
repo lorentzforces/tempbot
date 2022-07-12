@@ -3,6 +3,8 @@
 
 TempBot was originally created as a temperature-conversion bot. As time goes on, more ~~memes~~ features will be added.
 
+[The main code entry point is in Bot.java.](./src/main/java/tempbot/Bot.java)
+
 ## Building the Project
 
 ### Requirements:
