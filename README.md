@@ -5,6 +5,8 @@ TempBot was originally created as a temperature-conversion bot. As time goes on,
 
 [The main code entry point is in Bot.java.](./src/main/java/tempbot/Bot.java)
 
+This project uses hard tabs. [You can adjust the visual tab size in Github's web UI by appending `?ts=4` to the URL of the file you are viewing.](https://github.com/tiimgreen/github-cheat-sheet#adjust-tab-space)
+
 ## Building the Project
 
 ### Requirements:
