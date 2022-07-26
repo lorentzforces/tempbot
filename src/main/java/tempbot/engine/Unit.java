@@ -15,13 +15,13 @@ public class Unit {
 	private final Function<Double, Double> convertFrom;
 
 	public Unit(
-			String fullName,
-			String shortName,
-			boolean isDefaultConversionSource,
-			boolean isDefaultConversionResult,
-			Set<String> detectableNames,
-			Function<Double, Double> convertTo,
-			Function<Double, Double> convertFrom
+		String fullName,
+		String shortName,
+		boolean isDefaultConversionSource,
+		boolean isDefaultConversionResult,
+		Set<String> detectableNames,
+		Function<Double, Double> convertTo,
+		Function<Double, Double> convertFrom
 	) {
 		this.fullName = fullName;
 		this.shortName = shortName;

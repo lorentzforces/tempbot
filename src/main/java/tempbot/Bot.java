@@ -41,7 +41,7 @@ public class Bot {
 		ClientConfig result = null;
 		try {
 			InputStream clientConfigFile =
-					Files.newInputStream(configFilePath, StandardOpenOption.READ);
+				Files.newInputStream(configFilePath, StandardOpenOption.READ);
 
 			result = ConfigLoader.loadConfigurationFromFile(clientConfigFile, CONFIG_FILE_NAME);
 		}
@@ -59,9 +59,9 @@ public class Bot {
 	private static void
 	setLogSettings(ClientConfig config) {
 		Configuration.replace(LogConfigurer.configureLogging(
-				config.logLevel,
-				config.logOutput,
-				config.logFormat
+			config.logLevel,
+			config.logOutput,
+			config.logFormat
 		));
 	}
 
@@ -71,28 +71,28 @@ public class Bot {
 
 		client.withGateway(gatewayClient -> {
 			gatewayClient.getEventDispatcher().on(ReadyEvent.class).subscribe(
-					ready -> {
-						Logger.info("Bot client connected");
-					}
+				ready -> {
+					Logger.info("Bot client connected");
+				}
 			);
 
 			gatewayClient.getEventDispatcher()
-					.on(MessageCreateEvent.class)
-					.subscribe(messageCreateEvent -> {
-						Message message = messageCreateEvent.getMessage();
-						boolean shouldProcessMessage =
-								message.getAuthor().isPresent()
-								&& !message.getAuthor().get().isBot();
-						if (shouldProcessMessage) {
-							User me = messageCreateEvent.getClient().getSelf().block();
-							// lack of a guild id means a private message without
-							// requiring another API call for channel information
-							new MessageHandler(processor, me).handle(
-									message,
-									!messageCreateEvent.getGuildId().isPresent()
-							);
-						}
-					});
+				.on(MessageCreateEvent.class)
+				.subscribe(messageCreateEvent -> {
+					Message message = messageCreateEvent.getMessage();
+					boolean shouldProcessMessage =
+						message.getAuthor().isPresent()
+						&& !message.getAuthor().get().isBot();
+					if (shouldProcessMessage) {
+						User me = messageCreateEvent.getClient().getSelf().block();
+						// lack of a guild id means a private message without
+						// requiring another API call for channel information
+						new MessageHandler(processor, me).handle(
+							message,
+							!messageCreateEvent.getGuildId().isPresent()
+						);
+					}
+				});
 
 			Logger.info("Bot client initialization complete");
 			return gatewayClient.onDisconnect();

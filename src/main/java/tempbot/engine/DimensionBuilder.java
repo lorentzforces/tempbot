@@ -20,10 +20,10 @@ public class DimensionBuilder {
 	public Dimension
 	build() {
 		return new Dimension(
-				name,
-				units.stream().map(builder -> builder.build()).collect(Collectors.toList()),
-				minValue,
-				maxValue
+			name,
+			units.stream().map(builder -> builder.build()).collect(Collectors.toList()),
+			minValue,
+			maxValue
 		);
 	}
 

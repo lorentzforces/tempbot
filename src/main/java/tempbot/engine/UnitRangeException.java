@@ -6,36 +6,36 @@ public class UnitRangeException extends Exception {
 	private UnitValue offendingValue;
 
 	public UnitRangeException(
-			UnitValue rangeLimitingValue,
-			UnitValue offendingValue
+		UnitValue rangeLimitingValue,
+		UnitValue offendingValue
 	) {
 		super();
 		initValues(rangeLimitingValue, offendingValue);
 	}
 
 	public UnitRangeException(
-			String message,
-			UnitValue rangeLimitingValue,
-			UnitValue offendingValue
+		String message,
+		UnitValue rangeLimitingValue,
+		UnitValue offendingValue
 	) {
 		super(message);
 		initValues(rangeLimitingValue, offendingValue);
 	}
 
 	public UnitRangeException(
-			String message,
-			Throwable cause,
-			UnitValue rangeLimitingValue,
-			UnitValue offendingValue
+		String message,
+		Throwable cause,
+		UnitValue rangeLimitingValue,
+		UnitValue offendingValue
 	) {
 		super(message, cause);
 		initValues(rangeLimitingValue, offendingValue);
 	}
 
 	public UnitRangeException(
-			Throwable cause,
-			UnitValue rangeLimitingValue,
-			UnitValue offendingValue
+		Throwable cause,
+		UnitValue rangeLimitingValue,
+		UnitValue offendingValue
 	) {
 		super(cause);
 		initValues(rangeLimitingValue, offendingValue);
@@ -58,8 +58,8 @@ public class UnitRangeException extends Exception {
 	}
 
 	private void initValues(
-			UnitValue rangeLimitingValue,
-			UnitValue offendingValue
+		UnitValue rangeLimitingValue,
+		UnitValue offendingValue
 	) {
 		this.rangeLimitingValue = rangeLimitingValue;
 		this.offendingValue = offendingValue;

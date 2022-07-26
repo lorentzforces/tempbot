@@ -20,12 +20,12 @@ class ConfigPropertyFetcher {
 	 * Factory method for creating a configuration loader from a file path.
 	 */
 	public static ConfigPropertyFetcher createLoaderForPath(String filePath)
-			throws IOException
+		throws IOException
 	{
 		Path configFilePath = FileSystems.getDefault().getPath(filePath);
 
 		InputStream clientConfigFile =
-				Files.newInputStream(configFilePath, StandardOpenOption.READ);
+			Files.newInputStream(configFilePath, StandardOpenOption.READ);
 
 		return new ConfigPropertyFetcher(clientConfigFile, filePath);
 	}
@@ -40,19 +40,19 @@ class ConfigPropertyFetcher {
 	protected
 	ConfigPropertyFetcher(InputStream clientConfigFile, String readableFileIdentifier) {
 		Load yamlLoader = new Load(
-				LoadSettings.builder().setLabel("tempbot configuration file").build()
+			LoadSettings.builder().setLabel("tempbot configuration file").build()
 		);
 
 		this.readableFileIdentifier = readableFileIdentifier;
 		rawConfigProperties =
-				(Map<String, String>) yamlLoader.loadFromInputStream(clientConfigFile);
+			(Map<String, String>) yamlLoader.loadFromInputStream(clientConfigFile);
 	}
 
 	@SuppressWarnings("unchecked")
 	public <T> Optional<T>
 	fetchConfigProperty(
-			Class<T> type,
-			String name
+		Class<T> type,
+		String name
 	) throws ConfigLoadException {
 		Optional<Object> rawProperty = fetchRawProperty(name);
 
@@ -61,27 +61,27 @@ class ConfigPropertyFetcher {
 		}
 		else {
 			return type.isEnum()
-					? parseRawEnumProperty(rawProperty.orElseThrow(), type)
-					: parseRawNonEnumProperty(rawProperty.orElseThrow(), type);
+				? parseRawEnumProperty(rawProperty.orElseThrow(), type)
+				: parseRawNonEnumProperty(rawProperty.orElseThrow(), type);
 		}
 	}
 
 	public <T> T
 	requireConfigProperty(
-			Class<T> type,
-			String name
+		Class<T> type,
+		String name
 	) throws ConfigLoadException {
 		return fetchConfigProperty(type, name).orElseThrow(() ->
 			new ConfigLoadException(String.format(
-					"Required property not found: expected property \"%s\" in configuration %s",
-					name,
-					readableFileIdentifier
+				"Required property not found: expected property \"%s\" in configuration %s",
+				name,
+				readableFileIdentifier
 			)));
 	}
 
 	private Optional<Object>
 	fetchRawProperty(
-			String name
+		String name
 	) {
 		Object rawProperty = rawConfigProperties.get(name);
 		return rawProperty == null ? Optional.empty() : Optional.of(rawProperty);
@@ -90,8 +90,8 @@ class ConfigPropertyFetcher {
 	@SuppressWarnings("unchecked")
 	private <T> Optional<T>
 	parseRawEnumProperty(
-			Object rawProperty,
-			Class<T> type
+		Object rawProperty,
+		Class<T> type
 	) throws ConfigLoadException {
 		// this is an enum type, we expect a string value in the config file
 		String stringValue = null;
@@ -100,11 +100,11 @@ class ConfigPropertyFetcher {
 		}
 		catch (ClassCastException e) {
 			throw new ConfigLoadException(String.format(
-					"Property type mismatch: found [%s], expected a String representing a [%s] "
-							+ "in configuration %s",
-					rawProperty.getClass().getCanonicalName(),
-					type.getCanonicalName(),
-					readableFileIdentifier
+				"Property type mismatch: found [%s], expected a String representing a [%s] "
+					+ "in configuration %s",
+				rawProperty.getClass().getCanonicalName(),
+				type.getCanonicalName(),
+				readableFileIdentifier
 			));
 		}
 
@@ -115,11 +115,11 @@ class ConfigPropertyFetcher {
 		}
 		catch (IllegalArgumentException e) {
 			throw new ConfigLoadException(String.format(
-					"Invalid property enum value: \"%s\" is not a valid value for property \"%s\" "
-							+ "in configuration %s",
-					stringValue,
-					type.getCanonicalName(),
-					readableFileIdentifier
+				"Invalid property enum value: \"%s\" is not a valid value for property \"%s\" "
+					+ "in configuration %s",
+				stringValue,
+				type.getCanonicalName(),
+				readableFileIdentifier
 			));
 		}
 
@@ -129,8 +129,8 @@ class ConfigPropertyFetcher {
 
 	private <T> Optional<T>
 	parseRawNonEnumProperty(
-			Object rawProperty,
-			Class<T> type
+		Object rawProperty,
+		Class<T> type
 	) throws ConfigLoadException {
 		T result = null;
 		try {
@@ -138,11 +138,11 @@ class ConfigPropertyFetcher {
 		}
 		catch (ClassCastException e) {
 			throw new ConfigLoadException(String.format(
-					"Property type mismatch: found [%s], expected a String representing a [%s] "
-							+ "in configuration %s",
-					rawProperty.getClass().getCanonicalName(),
-					type.getCanonicalName(),
-					readableFileIdentifier
+				"Property type mismatch: found [%s], expected a String representing a [%s] "
+					+ "in configuration %s",
+				rawProperty.getClass().getCanonicalName(),
+				type.getCanonicalName(),
+				readableFileIdentifier
 			));
 		}
 

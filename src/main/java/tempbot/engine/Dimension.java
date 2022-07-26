@@ -16,10 +16,10 @@ public class Dimension {
 	private final Double maxValue;
 
 	public Dimension(
-			String name,
-			List<Unit> units,
-			Double minValue,
-			Double maxValue
+		String name,
+		List<Unit> units,
+		Double minValue,
+		Double maxValue
 	) {
 		this.name = name;
 		this.units = units;
@@ -41,33 +41,33 @@ public class Dimension {
 	 */
 	public List<UnitValue>
 	convertUnit(
-			UnitValue initialValue,
-			boolean returnAllUnits
+		UnitValue initialValue,
+		boolean returnAllUnits
 	) throws UnitRangeException {
 		checkUnitValue(initialValue);
 
 		Double baseValue = initialValue.getUnit().convertFrom(initialValue.getValue());
 		return units.stream()
-				.filter( unit -> (returnAllUnits || unit.isDefaultConversionResult()) )
-				.filter( unit -> unit != initialValue.getUnit())
-				.map( unit -> new UnitValue(unit, unit.convertTo(baseValue)) )
-				.collect(Collectors.toList());
+			.filter( unit -> (returnAllUnits || unit.isDefaultConversionResult()) )
+			.filter( unit -> unit != initialValue.getUnit())
+			.map( unit -> new UnitValue(unit, unit.convertTo(baseValue)) )
+			.collect(Collectors.toList());
 	}
 
 	public List<UnitValue>
 	convertSpecificUnit(
-			UnitValue initialValue,
-			Unit destinationUnit
+		UnitValue initialValue,
+		Unit destinationUnit
 	) throws UnitRangeException {
 		checkUnitValue(initialValue);
 
 		Double baseValue = initialValue.getUnit().convertFrom(initialValue.getValue());
 
 		return units.stream()
-				// due to this filter there should only ever be one element in this list
-				.filter( unit -> unit.equalsUnit(destinationUnit) )
-				.map( unit -> new UnitValue(unit, unit.convertTo(baseValue)) )
-				.collect(Collectors.toList());
+			// due to this filter there should only ever be one element in this list
+			.filter( unit -> unit.equalsUnit(destinationUnit) )
+			.map( unit -> new UnitValue(unit, unit.convertTo(baseValue)) )
+			.collect(Collectors.toList());
 	}
 
 	private void
@@ -78,15 +78,15 @@ public class Dimension {
 		if (minValue != null && baseValue < minValue) {
 			double minValueInUnit = input.getUnit().convertTo(minValue);
 			throw new UnitRangeException(
-					new UnitValue(input.getUnit(), minValueInUnit),
-					input
+				new UnitValue(input.getUnit(), minValueInUnit),
+				input
 			);
 		}
 		if (maxValue != null && baseValue > maxValue) {
 			double maxValueInUnit = input.getUnit().convertTo(maxValue);
 			throw new UnitRangeException(
-					new UnitValue(input.getUnit(), maxValueInUnit),
-					input
+				new UnitValue(input.getUnit(), maxValueInUnit),
+				input
 			);
 		}
 	}

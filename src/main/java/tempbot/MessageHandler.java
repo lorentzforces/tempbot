@@ -46,19 +46,19 @@ public class MessageHandler {
 		String lineBeginningOrWhitespace = "(?:^|\\s)";
 		String spacing = "\\s+";
 		String dimensionRegex = processor.getDimensions()
-				.map(dimension -> Pattern.quote(dimension.getName()))
-				.collect(Collectors.joining("|"));
+			.map(dimension -> Pattern.quote(dimension.getName()))
+			.collect(Collectors.joining("|"));
 
 		StringBuilder helpPattern = new StringBuilder(lineBeginningOrWhitespace)
-				.append("help")
-				.append("(?:")
-				.append(spacing)
-				.append("(?<")
-				.append(PATTERN_DIMENSION_GROUP)
-				.append(">")
-				.append(dimensionRegex)
-				.append("))?") // closes capturing group as well as the non-capturing one
-				.append("\\b");
+			.append("help")
+			.append("(?:")
+			.append(spacing)
+			.append("(?<")
+			.append(PATTERN_DIMENSION_GROUP)
+			.append(">")
+			.append(dimensionRegex)
+			.append("))?") // closes capturing group as well as the non-capturing one
+			.append("\\b");
 
 		return Pattern.compile(helpPattern.toString(), Pattern.CASE_INSENSITIVE);
 	}
@@ -74,8 +74,8 @@ public class MessageHandler {
 		boolean botWasMentioned = message.getUserMentionIds().contains(currentUser.getId());
 		if (botWasMentioned || isPrivateMessage) {
 			handlePotentialHelpResponse(
-					messageContent,
-					message.getAuthor().get()
+				messageContent,
+				message.getAuthor().get()
 			);
 		}
 
@@ -105,8 +105,8 @@ public class MessageHandler {
 			}
 			else {
 				createDimensionListingMessage(
-						processor.getDimensionFromName(dimensionString),
-						helpMessage
+					processor.getDimensionFromName(dimensionString),
+					helpMessage
 				);
 			}
 		}
@@ -124,32 +124,32 @@ public class MessageHandler {
 	private void
 	createDimensionListingMessage(Dimension dimension, StringBuilder message) {
 		message.append(DIMENSION_HELP_TEXT)
-				.append("\n> ")
-				.append(dimension.getUnits()
-						.map(unit -> {
-							return new StringBuilder()
-									.append("**")
-									.append(unit.getFullName())
-									.append("** ")
-									.append("(")
-									.append(unit.getDetectableNames().stream()
-											.collect(Collectors.joining(", ")))
-									.append(")");
-						})
-						.collect(Collectors.joining("\n> "))
-				);
+			.append("\n> ")
+			.append(dimension.getUnits()
+				.map(unit -> {
+					return new StringBuilder()
+						.append("**")
+						.append(unit.getFullName())
+						.append("** ")
+						.append("(")
+						.append(unit.getDetectableNames().stream()
+							.collect(Collectors.joining(", "))
+						).append(")");
+				})
+				.collect(Collectors.joining("\n> "))
+			);
 	}
 
 	private void
 	createGeneralHelpMessage(StringBuilder message) {
 		message.append(HELP_TEXT)
-				.append("\n")
-				.append(DIMENSION_EXPLAIN_TEXT)
-				.append("\n> ")
-				.append(processor.getDimensions()
-						.map(Dimension::getName)
-						.collect(Collectors.joining("\n> "))
-				);
+			.append("\n")
+			.append(DIMENSION_EXPLAIN_TEXT)
+			.append("\n> ")
+			.append(processor.getDimensions()
+				.map(Dimension::getName)
+				.collect(Collectors.joining("\n> "))
+			);
 	}
 
 	private void
@@ -203,13 +203,13 @@ public class MessageHandler {
 			}
 			else if (error instanceof MismatchedDimensionsException) {
 				MismatchedDimensionsException dimensionError =
-						(MismatchedDimensionsException) error;
+					(MismatchedDimensionsException) error;
 
 				output.append("Can't convert units from ")
-						.append(dimensionError.getUnitDimension().getName())
-						.append(" to ")
-						.append(dimensionError.getDestinationDimension().getName())
-						.append(".");
+					.append(dimensionError.getUnitDimension().getName())
+					.append(" to ")
+					.append(dimensionError.getDestinationDimension().getName())
+					.append(".");
 			}
 		}
 	}

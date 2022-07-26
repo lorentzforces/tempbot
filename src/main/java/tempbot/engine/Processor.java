@@ -21,10 +21,10 @@ public class Processor {
 	private final List<Dimension> dimensions;
 
 	public Processor(
-			Pattern masterPattern,
-			Pattern specificConversionPattern,
-			List<Dimension> dimensions,
-			Map<String, Dimension> dimensionMap
+		Pattern masterPattern,
+		Pattern specificConversionPattern,
+		List<Dimension> dimensions,
+		Map<String, Dimension> dimensionMap
 	) {
 		this.masterPattern = masterPattern;
 		this.specificConversionPattern = specificConversionPattern;
@@ -58,25 +58,25 @@ public class Processor {
 			}
 
 			boolean valueExists =
-					results.stream().anyMatch(existingResult ->
-							result.sourceValue.equalsUnitValue(existingResult.sourceValue)
-					);
+				results.stream().anyMatch(existingResult ->
+					result.sourceValue.equalsUnitValue(existingResult.sourceValue)
+				);
 
 			if (!valueExists && result.sourceValue != null) {
 				doSpecificConversion(mainMatcher, specificMatcher, result);
 				if (
-						!result.isSpecificConversion
-						&& (
-							result.sourceValue.getUnit().isDefaultConversionSource()
-							|| doMoreConversions
-						)
+					!result.isSpecificConversion
+					&& (
+						result.sourceValue.getUnit().isDefaultConversionSource()
+						|| doMoreConversions
+					)
 				) {
 					try {
 						result.values =
-								result.dimension.convertUnit(
-										result.sourceValue,
-										doMoreConversions
-								);
+							result.dimension.convertUnit(
+								result.sourceValue,
+								doMoreConversions
+							);
 					}
 					catch (UnitRangeException e) {
 						result.errors.add(e);
@@ -94,9 +94,9 @@ public class Processor {
 
 	private void
 	doSpecificConversion(
-			Matcher mainMatcher,
-			Matcher specificMatcher,
-			ProcessingResult result
+		Matcher mainMatcher,
+		Matcher specificMatcher,
+		ProcessingResult result
 	) {
 		specificMatcher.region(mainMatcher.end(), specificMatcher.regionEnd());
 		if (specificMatcher.find()) {
@@ -105,19 +105,19 @@ public class Processor {
 			Dimension destinationDimension = dimensionMap.get(unitString);
 			if (!result.dimension.getName().equals(destinationDimension.getName())) {
 				result.errors.add(
-						new MismatchedDimensionsException(
-								result.dimension,
-								destinationDimension
-						)
+					new MismatchedDimensionsException(
+						result.dimension,
+						destinationDimension
+					)
 				);
 			}
 			else {
 				try {
 					result.values =
-							result.dimension.convertSpecificUnit(
-									result.sourceValue,
-									result.dimension.getUnitByName(unitString)
-							);
+						result.dimension.convertSpecificUnit(
+							result.sourceValue,
+							result.dimension.getUnitByName(unitString)
+						);
 				}
 				catch (UnitRangeException e) {
 					result.errors.add(e);
@@ -134,9 +134,9 @@ public class Processor {
 	public Dimension
 	getDimensionFromName(String name) {
 		return dimensions.stream()
-				.filter(dimension -> dimension.getName().equalsIgnoreCase(name))
-				.findFirst()
-				.orElse(null);
+			.filter(dimension -> dimension.getName().equalsIgnoreCase(name))
+			.findFirst()
+			.orElse(null);
 	}
 
 }

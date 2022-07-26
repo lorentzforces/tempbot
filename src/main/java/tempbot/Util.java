@@ -11,10 +11,10 @@ public final class Util {
 	// as with standard compare methods, returns -1
 	public static boolean doublesAreEqual(double a, double b) {
 		if (
-				Double.isNaN(a)
-				|| Double.isNaN(b)
-				|| Double.isInfinite(a)
-				|| Double.isInfinite(b)
+			Double.isNaN(a)
+			|| Double.isNaN(b)
+			|| Double.isInfinite(a)
+			|| Double.isInfinite(b)
 		) {
 			return false;
 		}

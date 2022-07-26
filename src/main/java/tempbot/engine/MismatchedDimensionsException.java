@@ -5,36 +5,36 @@ public class MismatchedDimensionsException extends Exception {
 	private Dimension destinationDimension;
 
 	public MismatchedDimensionsException(
-			Dimension unitDimension,
-			Dimension destinationDimension
+		Dimension unitDimension,
+		Dimension destinationDimension
 	) {
 		super();
 		initValues(unitDimension, destinationDimension);
 	}
 
 	public MismatchedDimensionsException(
-			String message,
-			Dimension unitDimension,
-			Dimension destinationDimension
+		String message,
+		Dimension unitDimension,
+		Dimension destinationDimension
 	) {
 		super(message);
 		initValues(unitDimension, destinationDimension);
 	}
 
 	public MismatchedDimensionsException(
-			String message,
-			Throwable cause,
-			Dimension unitDimension,
-			Dimension destinationDimension
+		String message,
+		Throwable cause,
+		Dimension unitDimension,
+		Dimension destinationDimension
 	) {
 		super(message, cause);
 		initValues(unitDimension, destinationDimension);
 	}
 
 	public MismatchedDimensionsException(
-			Throwable cause,
-			Dimension unitDimension,
-			Dimension destinationDimension
+		Throwable cause,
+		Dimension unitDimension,
+		Dimension destinationDimension
 	) {
 		super(cause);
 		initValues(unitDimension, destinationDimension);
@@ -49,8 +49,8 @@ public class MismatchedDimensionsException extends Exception {
 	}
 
 	private void initValues(
-			Dimension unitDimension,
-			Dimension destinationDimension
+		Dimension unitDimension,
+		Dimension destinationDimension
 	) {
 		this.unitDimension = unitDimension;
 		this.destinationDimension = destinationDimension;

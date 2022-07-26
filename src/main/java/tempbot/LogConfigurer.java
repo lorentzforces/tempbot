@@ -15,7 +15,7 @@ public class LogConfigurer {
 	protected static final String FILE_WRITER_NAME = "writerFile";
 
 	protected static final String VERBOSE_FORMAT =
-			"{date} {class-name}:{line} {level} {pipe} {message}";
+		"{date} {class-name}:{line} {level} {pipe} {message}";
 	protected static final String CONCISE_FORMAT = "{date} {level} {pipe} {message}";
 
 	/**

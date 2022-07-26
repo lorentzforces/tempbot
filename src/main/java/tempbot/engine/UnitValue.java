@@ -8,8 +8,8 @@ public class UnitValue {
 	private final Double value;
 
 	public UnitValue(
-			Unit unit,
-			Double value
+		Unit unit,
+		Double value
 	) {
 		if (value == null) {
 			throw new IllegalArgumentException("Unit value cannot be null");
@@ -31,8 +31,8 @@ public class UnitValue {
 	public boolean
 	equalsUnitValue(UnitValue that) {
 		return (
-				this.unit.equalsUnit(that.unit)
-				&& doublesAreEqual(this.value, that.value)
+			this.unit.equalsUnit(that.unit)
+			&& doublesAreEqual(this.value, that.value)
 		);
 	}
 
