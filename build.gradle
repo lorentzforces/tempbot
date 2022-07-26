@@ -14,7 +14,6 @@ repositories {
 }
 
 dependencies {
-	// TODO(current): bump discord4j version to 3.2.2
 	implementation "com.discord4j:discord4j-core:3.2.2"
 	implementation "org.snakeyaml:snakeyaml-engine:2.3+"
 	implementation "org.tinylog:tinylog-api:2.3.+"
@@ -23,7 +22,6 @@ dependencies {
 	testImplementation "junit:junit-dep:4.11"
 }
 
-// TODO(current): bump to Java 17
 compileJava {
 	sourceCompatibility = 17
 	targetCompatibility = 17
