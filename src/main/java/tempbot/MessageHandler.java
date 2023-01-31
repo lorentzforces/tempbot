@@ -7,9 +7,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.channel.ChannelType;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.tinylog.Logger;
 import tempbot.engine.Dimension;
 import tempbot.engine.MismatchedDimensionsException;
@@ -20,7 +17,7 @@ import tempbot.engine.UnitValue;
 
 import static tempbot.Constants.PRECISION;
 
-public class MessageHandler extends ListenerAdapter {
+public class MessageHandler {
 
 	private static final String PATTERN_DIMENSION_GROUP = "dimension";
 
@@ -64,14 +61,6 @@ public class MessageHandler extends ListenerAdapter {
 			.append("\\b");
 
 		return Pattern.compile(helpPattern.toString(), Pattern.CASE_INSENSITIVE);
-	}
-
-
-	@Override
-	public void onMessageReceived(MessageReceivedEvent event) {
-		if (!event.getAuthor().isBot()) {
-			handle(event.getMessage(), event.isFromType(ChannelType.PRIVATE));
-		}
 	}
 
 	public void
