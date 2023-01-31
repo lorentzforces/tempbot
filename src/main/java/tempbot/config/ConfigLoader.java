@@ -15,7 +15,6 @@ public class ConfigLoader {
 		ConfigPropertyFetcher fetcher = new ConfigPropertyFetcher(configFile, readableFileName);
 
 		ClientConfig config = new ClientConfig();
-		config.clientId = fetcher.requireConfigProperty(String.class, "clientId");
 		config.secret = fetcher.requireConfigProperty(String.class, "secret");
 		config.logLevel = fetcher.requireConfigProperty(LogLevel.class, "loggingLevel");
 		config.logOutput = fetcher.requireConfigProperty(LogOutput.class, "logOutput");

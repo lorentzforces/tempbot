@@ -1,4 +1,3 @@
-clientId: "=== CLIENT ID HERE ==="
 secret: "=== BOT SECRET HERE ==="
 
 loggingLevel: "INFO"

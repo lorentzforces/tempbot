@@ -31,7 +31,6 @@ ConfigLoaderTest {
 	loadingConfigurationProducesConfigObject() throws Exception {
 		ClientConfig clientConfig = ConfigLoader.loadConfigurationFromFile(testClientConfigFileStream, "TEST CONFIG FILE");
 
-		assertThat(clientConfig.clientId, is("test-client-id"));
 		assertThat(clientConfig.secret, is("test-secret"));
 		assertThat(clientConfig.logLevel, is(LogLevel.DEBUG));
 		assertThat(clientConfig.logOutput, is(LogOutput.CONSOLE_AND_FILE));
