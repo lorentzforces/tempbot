@@ -1,23 +1,19 @@
 package tempbot;
 
-import discord4j.core.DiscordClient;
-import discord4j.core.DiscordClientBuilder;
-import discord4j.core.event.domain.lifecycle.ReadyEvent;
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.User;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.JDA.Status;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.tinylog.Logger;
 import org.tinylog.configuration.Configuration;
 import tempbot.config.ClientConfig;
 import tempbot.config.ConfigLoadException;
 import tempbot.config.ConfigLoader;
-import tempbot.engine.Processor;
 
 import static tempbot.Constants.CONFIG_FILE_NAME;
 import static tempbot.Util.logToStdOut;
@@ -29,8 +25,26 @@ public class Bot {
 	main(String[] args) {
 		ClientConfig config = loadClientConfig();
 		setLogSettings(config);
-		DiscordClient client = DiscordClientBuilder.create(config.secret).build();
-		registerDiscordHandlersAndBlock(client);
+
+		try {
+			awaitLoginAndRegisterHandlers(config);
+		} catch (InterruptedException e) {
+			Logger.error("Initialization interrupted, exiting");
+		}
+		Logger.info("Bot client initialization complete");
+	}
+
+	private static void
+	awaitLoginAndRegisterHandlers(ClientConfig config) throws InterruptedException {
+		var processor = ProcessorData.createProcesser();
+		var jda = JDABuilder
+			.createDefault(config.secret)
+			.enableIntents( GatewayIntent.MESSAGE_CONTENT)
+			.build();
+		Logger.info("Built JDA client and awaiting connection");
+		jda.awaitStatus(Status.CONNECTED);
+		Logger.info("Connected, initializing message handlers");
+		jda.addEventListener(new MessageHandler(processor, jda.getSelfUser().getId()));
 	}
 
 	private static ClientConfig
@@ -63,40 +77,6 @@ public class Bot {
 			config.logOutput,
 			config.logFormat
 		));
-	}
-
-	private static void
-	registerDiscordHandlersAndBlock(DiscordClient client) {
-		Processor processor = ProcessorData.createProcesser();
-
-		client.withGateway(gatewayClient -> {
-			gatewayClient.getEventDispatcher().on(ReadyEvent.class).subscribe(
-				ready -> {
-					Logger.info("Bot client connected");
-				}
-			);
-
-			gatewayClient.getEventDispatcher()
-				.on(MessageCreateEvent.class)
-				.subscribe(messageCreateEvent -> {
-					Message message = messageCreateEvent.getMessage();
-					boolean shouldProcessMessage =
-						message.getAuthor().isPresent()
-						&& !message.getAuthor().get().isBot();
-					if (shouldProcessMessage) {
-						User me = messageCreateEvent.getClient().getSelf().block();
-						// lack of a guild id means a private message without
-						// requiring another API call for channel information
-						new MessageHandler(processor, me).handle(
-							message,
-							!messageCreateEvent.getGuildId().isPresent()
-						);
-					}
-				});
-
-			Logger.info("Bot client initialization complete");
-			return gatewayClient.onDisconnect();
-		}).block();
 	}
 
 }
