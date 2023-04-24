@@ -8,7 +8,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.JDA.Status;
-import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -19,6 +18,7 @@ import org.tinylog.configuration.Configuration;
 import tempbot.config.ClientConfig;
 import tempbot.config.ConfigLoadException;
 import tempbot.config.ConfigLoader;
+import tempbot.engine.FullTextMessageProcessor;
 
 import static tempbot.Constants.CONFIG_FILE_NAME;
 import static tempbot.Util.logToStdOut;
@@ -53,7 +53,9 @@ public class Bot {
 		jda.awaitStatus(Status.CONNECTED);
 		Logger.info("Connected, initializing message handlers");
 
-		var messageHandler = new MessageHandler(ProcessorData.createProcesser(), jda.getSelfUser().getId());
+		var messageHandler = new MessageHandler(
+			new FullTextMessageProcessor(ProcessorData.createAllDimensions())
+		);
 		var eventHandler = new EventHandler(
 			messageHandler
 		);
@@ -64,6 +66,7 @@ public class Bot {
 				"help",
 				"read help about TempBot or any of the things it can convert between"
 			);
+
 		// for now we're adding it as a command to all guilds
 		jda.getGuildCache().stream().forEach(guild -> guild.updateCommands().addCommands(helpCommand).queue());
 	}
@@ -112,7 +115,7 @@ public class Bot {
 		public void
 		onMessageReceived(MessageReceivedEvent event) {
 			if (!event.getAuthor().isBot()) {
-				messageHandler.handle(event.getMessage(), event.isFromType(ChannelType.PRIVATE));
+				messageHandler.handle(event.getMessage());
 			}
 		}
 

@@ -3,9 +3,13 @@ package tempbot.engine;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.NonNull;
+import tempbot.engine.ProcessingResult.ConvertedValues;
+import tempbot.engine.ProcessingResult.ProcessingError;
+import tempbot.engine.ProcessingResult.ProcessingError.UnitOutOfRange;
 
 public class Dimension {
 
@@ -16,8 +20,8 @@ public class Dimension {
 	private final Double maxValue;
 
 	public Dimension(
-		String name,
-		List<Unit> units,
+		@NonNull String name,
+		@NonNull List<Unit> units,
 		Double minValue,
 		Double maxValue
 	) {
@@ -37,58 +41,66 @@ public class Dimension {
 
 	/**
 	 * Convert an input value with the given unit to all applicable units.
-	 * @param returnAllUnits if false, only return default units, otherwise all
 	 */
-	public List<UnitValue>
-	convertUnit(
-		UnitValue initialValue,
-		boolean returnAllUnits
-	) throws UnitRangeException {
-		checkUnitValue(initialValue);
+	public ProcessingResult
+	convertUnit(UnitValue initialValue) {
+		final var maybeError = checkUnitValue(initialValue);
+		if (maybeError.isPresent()) {
+			return maybeError.orElseThrow();
+		}
 
-		Double baseValue = initialValue.getUnit().convertFrom(initialValue.getValue());
-		return units.stream()
-			.filter( unit -> (returnAllUnits || unit.isDefaultConversionResult()) )
-			.filter( unit -> unit != initialValue.getUnit())
-			.map( unit -> new UnitValue(unit, unit.convertTo(baseValue)) )
-			.collect(Collectors.toList());
+		final var baseValue = initialValue.unit().convertFrom(initialValue.value());
+
+		return ConvertedValues.builder()
+			.sourceValue(initialValue)
+			.values(
+				units.stream()
+					.filter(Unit::isDefaultConversionResult)
+					.filter(unit -> unit != initialValue.unit())
+					.map(unit -> new UnitValue(unit, unit.convertTo(baseValue)))
+					.toList()
+			).build();
 	}
 
 	public List<UnitValue>
 	convertSpecificUnit(
 		UnitValue initialValue,
 		Unit destinationUnit
-	) throws UnitRangeException {
+	) {
 		checkUnitValue(initialValue);
-
-		Double baseValue = initialValue.getUnit().convertFrom(initialValue.getValue());
+		final var baseValue = initialValue.unit().convertFrom(initialValue.value());
 
 		return units.stream()
 			// due to this filter there should only ever be one element in this list
-			.filter( unit -> unit.equalsUnit(destinationUnit) )
-			.map( unit -> new UnitValue(unit, unit.convertTo(baseValue)) )
-			.collect(Collectors.toList());
+			.filter(unit -> unit.equalsUnit(destinationUnit))
+			.map(unit -> new UnitValue(unit, unit.convertTo(baseValue)))
+			.toList();
 	}
 
-	private void
-	checkUnitValue(UnitValue input) throws UnitRangeException{
-		Double baseValue = input.getUnit().convertFrom(input.getValue());
+	private Optional<ProcessingError.UnitOutOfRange>
+	checkUnitValue(UnitValue input) {
+		final var baseValue = input.unit().convertFrom(input.value());
 
-		// check for min/max values
 		if (minValue != null && baseValue < minValue) {
-			double minValueInUnit = input.getUnit().convertTo(minValue);
-			throw new UnitRangeException(
-				new UnitValue(input.getUnit(), minValueInUnit),
-				input
+			final var minValueInUnit = input.unit().convertTo(minValue);
+			return Optional.of(
+				UnitOutOfRange.builder()
+					.rangeLimitingValue(new UnitValue(input.unit(), minValueInUnit))
+					.sourceValue(input)
+					.build()
 			);
-		}
-		if (maxValue != null && baseValue > maxValue) {
-			double maxValueInUnit = input.getUnit().convertTo(maxValue);
-			throw new UnitRangeException(
-				new UnitValue(input.getUnit(), maxValueInUnit),
-				input
+		} else if (maxValue != null && baseValue > maxValue) {
+			final var maxValueInUnit = input.unit().convertTo(maxValue);
+			return Optional.of(
+				UnitOutOfRange.builder()
+					.rangeLimitingValue(new UnitValue(input.unit(), maxValueInUnit))
+					.sourceValue(input)
+					.build()
 			);
+		} else {
+			return Optional.empty();
 		}
+
 	}
 
 	public Stream<Unit>

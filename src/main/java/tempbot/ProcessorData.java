@@ -1,33 +1,34 @@
 package tempbot;
 
+import java.util.Set;
+import tempbot.engine.Dimension;
 import tempbot.engine.DimensionBuilder;
-import tempbot.engine.Processor;
-import tempbot.engine.ProcessorBuilder;
 import tempbot.engine.UnitBuilder;
 
 public class ProcessorData {
 
-	public static Processor
-	createProcesser() {
-		return new ProcessorBuilder()
-			.addDimension(createTemperatureDimension())
-			.addDimension(createSpeedDimension())
-			.addDimension(createBloodSugarDimension())
-			.addDimension(createWeightDimension())
-			.addDimension(createDistanceDimension())
-			.build();
-		// TODO: add other dimensions
-		// these may have to wait until I build a way to specify the target
-		// of the conversion (i.e. "I want to convert a specific unit value to another
-		// specific unit) just because of the massive number of units involved that people
-		// might be interested in
-		// * length
-		//	 * do we maybe do a "large scale distance" versus "short scale distance?"
-		//	   which we might call "distance" vs "length" maybe?
-		// * liquid volume
+	public static Set<Dimension>
+	createAllDimensions() {
+		return Set.of(
+			createTemperatureDimension(),
+			createSpeedDimension(),
+			createBloodSugarDimension(),
+			createWeightDimension(),
+			createDistanceDimension()
+		);
 	}
 
-	public static DimensionBuilder
+	// TODO: add other dimensions
+	// these may have to wait until I build a way to specify the target
+	// of the conversion (i.e. "I want to convert a specific unit value to another
+	// specific unit) just because of the massive number of units involved that people
+	// might be interested in
+	// * length
+	//	 * do we maybe do a "large scale distance" versus "short scale distance?"
+	//	   which we might call "distance" vs "length" maybe?
+	// * liquid volume
+
+	public static Dimension
 	createTemperatureDimension() {
 		UnitBuilder celsius = new UnitBuilder()
 			.setFullName("degrees Celsius")
@@ -54,23 +55,22 @@ public class ProcessorData {
 		UnitBuilder kelvin = new UnitBuilder()
 			.setFullName("degrees Kelvin")
 			.setShortName("K")
-			// don't recognize lowercase k to avoid thousands
-			// being interpreted as temperatures
+			// don't recognize lowercase k to avoid thousands (like "100k") being interpreted as
+			// temperatures
 			.addDetectableName("Kelvin")
 			.addDetectableName("kelvin")
 			.setConversionTo(x -> x)
 			.setConversionFrom(x -> x);
-		DimensionBuilder temperature = new DimensionBuilder()
+		return new DimensionBuilder()
 			.setName("Temperature")
 			.addUnit(celsius)
 			.addUnit(fahrenheit)
 			.addUnit(kelvin)
-			.setMinValue(0d);
-
-		return temperature;
+			.setMinValue(0d)
+			.build();
 	}
 
-	public static DimensionBuilder
+	public static Dimension
 	createSpeedDimension() {
 		UnitBuilder milesPerHour = new UnitBuilder()
 			.setFullName("miles per hour")
@@ -104,19 +104,18 @@ public class ProcessorData {
 			.setShortName("knots")
 			.setConversionTo(x -> x / 0.51444d)
 			.setConversionFrom(x -> x * 0.51444d);
-		DimensionBuilder speed = new DimensionBuilder()
+		return new DimensionBuilder()
 			.setName("Speed")
 			.addUnit(milesPerHour)
 			.addUnit(kilometersPerHour)
 			.addUnit(metersPerSecond)
 			.addUnit(feetPerSecond)
 			.addUnit(knots)
-			.setMinValue(0d);
-
-		return speed;
+			.setMinValue(0d)
+			.build();
 	}
 
-	public static DimensionBuilder
+	public static Dimension
 	createBloodSugarDimension() {
 		UnitBuilder usUnits = new UnitBuilder()
 			.setFullName("milligrams per deciliter")
@@ -134,16 +133,15 @@ public class ProcessorData {
 			.addDetectableName("mmol/l")
 			.setConversionTo(x -> x)
 			.setConversionFrom(x -> x);
-		DimensionBuilder bloodSugar = new DimensionBuilder()
+		return new DimensionBuilder()
 			.setName("Blood sugar")
 			.addUnit(usUnits)
 			.addUnit(globalUnits)
-			.setMinValue(0d);
-
-		return bloodSugar;
+			.setMinValue(0d)
+			.build();
 	}
 
-	public static DimensionBuilder
+	public static Dimension
 	createWeightDimension() {
 		UnitBuilder kilograms = new UnitBuilder()
 			.setFullName("kilograms")
@@ -158,16 +156,15 @@ public class ProcessorData {
 			.addDetectableName("lb")
 			.setConversionTo(x -> (x * 2.2046d))
 			.setConversionFrom(x -> (x / 2.2046d));
-		DimensionBuilder weight = new DimensionBuilder()
+		return new DimensionBuilder()
 			.setName("Weight")
 			.addUnit(kilograms)
 			.addUnit(pounds)
-			.setMinValue(0d);
-
-		return weight;
+			.setMinValue(0d)
+			.build();
 	}
 
-	public static DimensionBuilder
+	public static Dimension
 	createDistanceDimension() {
 		UnitBuilder meters = new UnitBuilder()
 			.setFullName("meters")
@@ -191,15 +188,14 @@ public class ProcessorData {
 			.setShortName("nmi")
 			.setConversionTo(x -> x / 1852d)
 			.setConversionFrom(x -> x * 1852d);
-		DimensionBuilder distance = new DimensionBuilder()
+		return new DimensionBuilder()
 			.setName("Distance")
 			.addUnit(meters)
 			.addUnit(kilometers)
 			.addUnit(miles)
 			.addUnit(nauticalMiles)
-			.setMinValue(0d);
-
-		return distance;
+			.setMinValue(0d)
+			.build();
 	}
 
 }

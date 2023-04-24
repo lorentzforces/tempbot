@@ -10,14 +10,10 @@ public class UnitBuilder {
 	private String shortName;
 	private boolean isDefaultConversionSource;
 	private boolean isDefaultConversionResult;
-	private Set<String> detectableNames;
+	private final Set<String> detectableNames = new HashSet<>();
 
 	private Function<Double, Double> convertTo;
 	private Function<Double, Double> convertFrom;
-
-	public UnitBuilder() {
-		detectableNames = new HashSet<>();
-	}
 
 	public Unit
 	build() {

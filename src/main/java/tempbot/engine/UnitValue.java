@@ -2,32 +2,13 @@ package tempbot.engine;
 
 import static tempbot.Util.doublesAreEqual;
 
-public class UnitValue {
+import lombok.Builder;
+import lombok.NonNull;
 
-	private final Unit unit;
-	private final Double value;
+@Builder
+public record UnitValue(@NonNull Unit unit, double value) {
 
-	public UnitValue(
-		Unit unit,
-		Double value
-	) {
-		if (value == null) {
-			throw new IllegalArgumentException("Unit value cannot be null");
-		}
-		this.unit = unit;
-		this.value = value;
-	}
-
-	public Unit
-	getUnit() {
-		return unit;
-	}
-
-	public Double
-	getValue() {
-		return value;
-	}
-
+	// NOTE: this is not transitive
 	public boolean
 	equalsUnitValue(UnitValue that) {
 		return (
