@@ -1,11 +1,6 @@
 package tempbot.config;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.Map;
 import java.util.Optional;
 import org.snakeyaml.engine.v2.api.Load;
@@ -13,22 +8,8 @@ import org.snakeyaml.engine.v2.api.LoadSettings;
 
 class ConfigPropertyFetcher {
 
-	private String readableFileIdentifier;
-	private Map<String, String> rawConfigProperties;
-
-	/**
-	 * Factory method for creating a configuration loader from a file path.
-	 */
-	public static ConfigPropertyFetcher createLoaderForPath(String filePath)
-		throws IOException
-	{
-		Path configFilePath = FileSystems.getDefault().getPath(filePath);
-
-		InputStream clientConfigFile =
-			Files.newInputStream(configFilePath, StandardOpenOption.READ);
-
-		return new ConfigPropertyFetcher(clientConfigFile, filePath);
-	}
+	private final String readableFileIdentifier;
+	private final Map<String, String> rawConfigProperties;
 
 	/**
 	 * Create a configuration loader to load a yaml configuration file from an {@link InputStream}.
@@ -38,8 +19,8 @@ class ConfigPropertyFetcher {
 	 */
 	@SuppressWarnings("unchecked")
 	protected
-	ConfigPropertyFetcher(InputStream clientConfigFile, String readableFileIdentifier) {
-		Load yamlLoader = new Load(
+	ConfigPropertyFetcher(final InputStream clientConfigFile, final String readableFileIdentifier) {
+		final var yamlLoader = new Load(
 			LoadSettings.builder().setLabel("tempbot configuration file").build()
 		);
 
@@ -51,10 +32,10 @@ class ConfigPropertyFetcher {
 	@SuppressWarnings("unchecked")
 	public <T> Optional<T>
 	fetchConfigProperty(
-		Class<T> type,
-		String name
+		final Class<T> type,
+		final String name
 	) throws ConfigLoadException {
-		Optional<Object> rawProperty = fetchRawProperty(name);
+		final var rawProperty = fetchRawProperty(name);
 
 		if (rawProperty.isEmpty()) {
 			return (Optional<T>) rawProperty;
@@ -68,8 +49,8 @@ class ConfigPropertyFetcher {
 
 	public <T> T
 	requireConfigProperty(
-		Class<T> type,
-		String name
+		final Class<T> type,
+		final String name
 	) throws ConfigLoadException {
 		return fetchConfigProperty(type, name).orElseThrow(() ->
 			new ConfigLoadException(String.format(
@@ -79,26 +60,27 @@ class ConfigPropertyFetcher {
 			)));
 	}
 
-	private Optional<Object>
+	// TODO: figure out what to do if we're ever not getting Strings out of the yaml loader
+	private Optional<String>
 	fetchRawProperty(
-		String name
+		final String name
 	) {
-		Object rawProperty = rawConfigProperties.get(name);
+		final var rawProperty = rawConfigProperties.get(name);
 		return rawProperty == null ? Optional.empty() : Optional.of(rawProperty);
 	}
 
 	@SuppressWarnings("unchecked")
 	private <T> Optional<T>
 	parseRawEnumProperty(
-		Object rawProperty,
-		Class<T> type
+		final Object rawProperty,
+		final Class<T> type
 	) throws ConfigLoadException {
 		// this is an enum type, we expect a string value in the config file
 		String stringValue = null;
 		try {
-			stringValue = String.class.cast(rawProperty);
+			stringValue = (String) rawProperty;
 		}
-		catch (ClassCastException e) {
+		catch (final ClassCastException e) {
 			throw new ConfigLoadException(String.format(
 				"Property type mismatch: found [%s], expected a String representing a [%s] "
 					+ "in configuration %s",
@@ -113,7 +95,7 @@ class ConfigPropertyFetcher {
 			// this casting is nasty AF, but it's the price we pay for convenient parsing methods
 			result = (T) Enum.valueOf( (Class<? extends Enum>) type, stringValue);
 		}
-		catch (IllegalArgumentException e) {
+		catch (final IllegalArgumentException e) {
 			throw new ConfigLoadException(String.format(
 				"Invalid property enum value: \"%s\" is not a valid value for property \"%s\" "
 					+ "in configuration %s",
@@ -129,14 +111,14 @@ class ConfigPropertyFetcher {
 
 	private <T> Optional<T>
 	parseRawNonEnumProperty(
-		Object rawProperty,
-		Class<T> type
+		final Object rawProperty,
+		final Class<T> type
 	) throws ConfigLoadException {
 		T result = null;
 		try {
 			result = type.cast(rawProperty);
 		}
-		catch (ClassCastException e) {
+		catch (final ClassCastException e) {
 			throw new ConfigLoadException(String.format(
 				"Property type mismatch: found [%s], expected a String representing a [%s] "
 					+ "in configuration %s",

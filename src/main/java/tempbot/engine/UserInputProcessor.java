@@ -2,12 +2,15 @@ package tempbot.engine;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import lombok.Getter;
 import lombok.NonNull;
 import org.tinylog.Logger;
 import tempbot.engine.ProcessingResult.ParsedSourceValue;
@@ -16,28 +19,45 @@ import tempbot.engine.ProcessingResult.ValueNotConverted;
 
 import static tempbot.Constants.MAX_CONVERSIONS;
 
-public class FullTextMessageProcessor {
+public class UserInputProcessor {
 	private final Map<String, Dimension> dimensionsByUnitName = new HashMap<>();
 	private final Pattern unitsPattern;
-	private static final Pattern DOUBLE_NUMBER_PATTERN = RegexHelper.buildDoubleNumberPattern();
 
+	@Getter
+	private final Set<String> eagerDimensions;
+	@Getter
+	private final Set<String> nonEagerDimensions;
+
+	private static final Pattern DOUBLE_NUMBER_PATTERN = RegexHelper.buildDoubleNumberPattern();
 	private static final String PATTERN_UNIT_LABEL_GROUP = "unitName";
 
-	public FullTextMessageProcessor(
-		@NonNull Set<Dimension> dimensions
+	public UserInputProcessor(
+		@NonNull final Set<Dimension> dimensions
 	) {
-		for (Dimension dimension : dimensions) {
-			for (String unitName : dimension.getUnitNames()) {
+		final var eagerDimensionStaging = new HashSet<String>();
+		final var nonEagerDimensionStaging = new HashSet<String>();
+		for (final Dimension dimension : dimensions) {
+			for (final String unitName : dimension.getUnitNames()) {
 				dimensionsByUnitName.put(unitName, dimension);
 			}
+
+
+			if (dimension.isHasEagerConversions()) {
+				eagerDimensionStaging.add(dimension.getName());
+			} else {
+				nonEagerDimensionStaging.add(dimension.getName());
+			}
 		}
+
+		eagerDimensions = Collections.unmodifiableSet(eagerDimensionStaging);
+		nonEagerDimensions = Collections.unmodifiableSet(nonEagerDimensionStaging);
 
 		unitsPattern = buildUnitsPattern(dimensionsByUnitName.keySet());
 	}
 
 	private static Pattern
-	buildUnitsPattern(Collection<String> dimensionNames) {
-		String unitsRegex =
+	buildUnitsPattern(final Collection<String> dimensionNames) {
+		final String unitsRegex =
 			"\\d" // one decimal digit
 			+ RegexHelper.SOMETIMES_A_SPACE
 			+ RegexHelper.buildNamedGroup(
@@ -50,12 +70,12 @@ public class FullTextMessageProcessor {
 	}
 
 	public List<ProcessingResult>
-	processMessage(String message) {
+	processMessage(final String message) {
 		final var unitLabelMatcher = unitsPattern.matcher(message);
 		final var numericMatcher = DOUBLE_NUMBER_PATTERN.matcher(message);
 
 		final var results = new ArrayList<ProcessingResult>();
-		var previousMatchEnd = 0;
+		final var previousMatchEnd = 0;
 		while (unitLabelMatcher.find() && results.size() < MAX_CONVERSIONS) {
 			final var unitLabel = unitLabelMatcher.group(PATTERN_UNIT_LABEL_GROUP);
 
@@ -93,7 +113,7 @@ public class FullTextMessageProcessor {
 					} else {
 						result = ValueNotConverted.builder().sourceValue(sourceValue).build();
 					}
-				} catch (NumberFormatException e) {
+				} catch (final NumberFormatException e) {
 					Logger.error(e, String.format("""
 						Encountered a NumberFormatException when parsing a regex-matched Double \
 						value. This should never happen.
@@ -118,7 +138,7 @@ public class FullTextMessageProcessor {
 		public static final String NAMED_GROUP_TERMINATOR = ")";
 
 		public static StringBuilder
-		buildNamedGroup(String groupLabel, String groupRegex) {
+		buildNamedGroup(final String groupLabel, final String groupRegex) {
 			return new StringBuilder()
 				.append(NAMED_GROUP_START)
 				.append(groupLabel)
@@ -163,4 +183,5 @@ public class FullTextMessageProcessor {
 			return Pattern.compile(doubleRegex);
 		}
 	}
+
 }

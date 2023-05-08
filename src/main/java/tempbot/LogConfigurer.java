@@ -30,16 +30,12 @@ public class LogConfigurer {
 		configuredProperties.put("level", logLevel.name());
 
 		switch (logOutput) {
-			case CONSOLE_AND_FILE: {
+			case CONSOLE_AND_FILE -> {
 				addConsoleWriter(configuredProperties, logFormat);
 				addFileWriter(configuredProperties, logFormat);
-			} break;
-			case CONSOLE: {
-				addConsoleWriter(configuredProperties, logFormat);
-			} break;
-			case FILE: {
-				addFileWriter(configuredProperties, logFormat);
-			} break;
+			}
+			case CONSOLE -> addConsoleWriter(configuredProperties, logFormat);
+			case FILE -> addFileWriter(configuredProperties, logFormat);
 		}
 
 		return configuredProperties;

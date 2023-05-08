@@ -15,9 +15,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static tempbot.Constants.COMPARISON_EPSILON;
 
-public class TestFullTextMessageProcessor {
+public class UserInputProcessorTest {
 
-	private FullTextMessageProcessor processor;
+	private UserInputProcessor processor;
 
 	@Before
 	public void
@@ -235,20 +235,22 @@ public class TestFullTextMessageProcessor {
 	/**
 	 * Temperature is used as a reasonable representative use case.
 	 */
-	private FullTextMessageProcessor
+	private UserInputProcessor
 	buildBasicTemperatureProcessor() {
-		UnitBuilder randomOtherUnit = new UnitBuilder()
-				.setFullName("dummy")
-				.setShortName("dumb")
-				.setConversionTo(x -> x)
-				.setConversionFrom(x -> x);
-		DimensionBuilder randomDimension = new DimensionBuilder()
-				.setName("Dummy Dimension")
-				.addUnit(randomOtherUnit);
+		final var randomOtherUnit = Unit.builder()
+			.fullName("dummy")
+			.shortName("dumb")
+			.convertTo(x -> x)
+			.convertFrom(x -> x)
+			.build();
+		final var randomDimension = Dimension.builder()
+			.name("DummyDimension")
+			.unit(randomOtherUnit)
+			.build();
 
-		return new FullTextMessageProcessor(Set.of(
+		return new UserInputProcessor(Set.of(
 			ProcessorData.createTemperatureDimension(),
-			randomDimension.build()
+			randomDimension
 		));
 	}
 

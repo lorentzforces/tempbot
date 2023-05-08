@@ -4,8 +4,11 @@ import java.text.DecimalFormat;
 import java.util.List;
 import lombok.NonNull;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.tinylog.Logger;
-import tempbot.engine.FullTextMessageProcessor;
+import tempbot.engine.UserInputProcessor;
 import tempbot.engine.ProcessingResult;
 import tempbot.engine.ProcessingResult.ConvertedValues;
 import tempbot.engine.ProcessingResult.ProcessingError;
@@ -17,27 +20,50 @@ import tempbot.engine.UnitValue;
 import static tempbot.Constants.PRECISION;
 import static tempbot.Util.panicToStdErr;
 
-public class MessageHandler {
+/**
+ * Interface responsible for translating Discord actions into processor operations
+ */
+public class BotEventHandler extends ListenerAdapter {
 
-	private final FullTextMessageProcessor processor;
+	private final UserInputProcessor processor;
 	private final DecimalFormat format;
+	private final String helpText;
 
-	public MessageHandler(@NonNull FullTextMessageProcessor processor) {
+	public BotEventHandler(@NonNull final UserInputProcessor processor) {
 		this.processor = processor;
 
 		format = new DecimalFormat("###,###,###,###." + "#".repeat(PRECISION));
+		helpText = buildHelpText(processor);
+	}
+
+	@Override
+	public void
+	onMessageReceived(final MessageReceivedEvent event) {
+		if (!event.getAuthor().isBot()) {
+			handleMessage(event.getMessage());
+		}
+	}
+
+	@Override
+	public void
+	onSlashCommandInteraction(final SlashCommandInteractionEvent event) {
+		switch (event.getName()) {
+			case "help" -> displayHelp(event);
+			case "convert" -> handleConversion(event);
+			default -> handleUnknownEvent(event);
+		}
 	}
 
 	public void
-	handle(Message message) {
-		String messageContent = message.getContentStripped();
+	handleMessage(final Message message) {
+		final String messageContent = message.getContentStripped();
 		Logger.debug("Message handling: \"" + messageContent + "\"");
 		if (messageContent.length() == 0) {
 			return;
 		}
 
-		List<ProcessingResult> results = processor.processMessage(messageContent);
-		StringBuilder processingOutput = new StringBuilder();
+		final List<ProcessingResult> results = processor.processMessage(messageContent);
+		final StringBuilder processingOutput = new StringBuilder();
 		formatProcessingResults(results, processingOutput);
 
 		if (processingOutput.length() > 0) {
@@ -45,33 +71,29 @@ public class MessageHandler {
 		}
 	}
 
-//	private void
-//	handlePotentialHelpResponse(String messageContents, User them) {
-//		Matcher botMentionMatcher = rawBotMentionPattern.matcher(messageContents);
-//		String contentsWithoutBotMention = botMentionMatcher.replaceAll("").trim();
-//		Matcher helpMatcher = helpPattern.matcher(messageContents);
-//
-//		StringBuilder helpMessage = new StringBuilder();
-//		if (helpMatcher.find()) {
-//			String dimensionString = helpMatcher.group(PATTERN_DIMENSION_GROUP);
-//			if (dimensionString == null) {
-//				createGeneralHelpMessage(helpMessage);
-//			}
-//			else {
-//				createDimensionListingMessage(
-//					processor.getDimensionFromName(dimensionString),
-//					helpMessage
-//				);
-//			}
-//		}
-//		else if (contentsWithoutBotMention.length() == 0) {
-//			createGeneralHelpMessage(helpMessage);
-//		}
-//
-//		if (helpMessage.length() > 0) {
-//			them.openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(helpMessage.toString()));
-//		}
-//	}
+	public void
+	displayHelp(final SlashCommandInteractionEvent commandEvent) {
+		commandEvent.reply(helpText).setEphemeral(true).queue();
+	}
+
+	public void
+	handleConversion(final SlashCommandInteractionEvent commandEvent) {
+
+	}
+
+	public void
+	handleUnknownEvent(final SlashCommandInteractionEvent commandEvent) {
+		Logger.error(String.format(
+			"A command was invoked that has no defined handler: %s",
+			commandEvent.getName()
+		));
+		commandEvent
+			.reply("""
+				Sorry! The system does not have a definition for the command you attempted to \
+				invoke. This error has been logged for the developers of this bot."""
+			).setEphemeral(true)
+			.queue();
+	}
 
 //	private void
 //	createDimensionListingMessage(Dimension dimension, StringBuilder message) {
@@ -105,14 +127,14 @@ public class MessageHandler {
 //	}
 
 	private void
-	formatProcessingResults(List<ProcessingResult> results, StringBuilder output) {
-		for (ProcessingResult result : results) {
+	formatProcessingResults(final List<ProcessingResult> results, final StringBuilder output) {
+		for (final ProcessingResult result : results) {
 			final var standardOutput = new StringBuilder();
 			final var errorOutput = new StringBuilder();
 
-			if (result instanceof ConvertedValues conversions) {
+			if (result instanceof final ConvertedValues conversions) {
 				formatResults(conversions, standardOutput);
-			} else if (result instanceof ProcessingError error) {
+			} else if (result instanceof final ProcessingError error) {
 				formatError(error, errorOutput);
 			} else {
 				panicToStdErr("Attempted to format a result which was not a known result class.");
@@ -126,7 +148,7 @@ public class MessageHandler {
 	}
 
 	private void
-	formatResults(ConvertedValues result, StringBuilder output) {
+	formatResults(final ConvertedValues result, final StringBuilder output) {
 		if (result.values().size() > 0) {
 			addUnitValueString(result.sourceValue(), output);
 			output.append(" = ");
@@ -136,7 +158,7 @@ public class MessageHandler {
 			}
 			else {
 				output.append("\n");
-				for (UnitValue value : result.values()) {
+				for (final UnitValue value : result.values()) {
 					output.append("> ");
 					addUnitValueString(value, output);
 					output.append("\n");
@@ -146,8 +168,8 @@ public class MessageHandler {
 	}
 
 	private void
-	formatError(ProcessingError error, StringBuilder output) {
-		if (error instanceof UnitOutOfRange rangeError) {
+	formatError(final ProcessingError error, final StringBuilder output) {
+		if (error instanceof final UnitOutOfRange rangeError) {
 			addUnitValueString(rangeError.sourceValue(), output);
 			output.append(" is ");
 			output.append(switch (rangeError.limitType()) {
@@ -161,7 +183,7 @@ public class MessageHandler {
 				case MINIMUM -> "minimum";
 			});
 			output.append(".");
-		} else if (error instanceof DimensionMismatch dimensionError) {
+		} else if (error instanceof final DimensionMismatch dimensionError) {
 			output.append("Can't convert units from ")
 				.append(dimensionError.sourceDimension().getName())
 				.append(" to ")
@@ -173,21 +195,46 @@ public class MessageHandler {
 		}
 	}
 
+	private static String
+	buildHelpText(UserInputProcessor processor) {
+		final var helpText = new StringBuilder("""
+			TempBot is a unit-conversion bot. It can convert a variety of units to make your \
+			conversations easier with friends who might use different temperature units from you, \
+			or just satisfy your curiosity.
+
+			TempBot will automatically convert units of the following types if it sees them in a channel:
+			""");
+
+		processor.getEagerDimensions().stream().forEach(name -> {
+			helpText.append("- ")
+				.append(name)
+				.append("\n");
+		});
+
+		helpText.append("\n")
+			.append("TempBot can also convert units of the following types when asked:\n");
+
+		processor.getNonEagerDimensions().stream().forEach(name -> {
+			helpText.append("- ")
+				.append(name)
+				.append("\n");
+		});
+
+		helpText.append("\n")
+			.append("""
+				To see what units TempBot knows about for each type, invoke `/help` and include \
+				the name of one of these unit types.""");
+
+		return helpText.toString();
+	}
+
 	private void
-	addUnitValueString(UnitValue value, StringBuilder buffer) {
+	addUnitValueString(final UnitValue value, final StringBuilder buffer) {
 		buffer.append("**")
 			.append(format.format(value.value()))
 			.append(" ")
 			.append(value.unit().getShortName())
 			.append("**");
 	}
-
-	private static final String DIMENSION_EXPLAIN_TEXT =
-		"Right now, I can do conversions for these categories (tag or DM me and say "
-		+ "\"help *<category name>*\" to see the units I can convert in each category:";
-
-	private static final String DIMENSION_HELP_TEXT =
-		"These are the units of that type I can convert:";
-
 
 }

@@ -11,16 +11,15 @@ public class ConfigLoader {
 	ConfigLoader() { /* private constructor */ }
 
 	public static ClientConfig
-	loadConfigurationFromFile(InputStream configFile, String readableFileName) throws ConfigLoadException {
-		ConfigPropertyFetcher fetcher = new ConfigPropertyFetcher(configFile, readableFileName);
+	loadConfigurationFromFile(final InputStream configFile, final String readableFileName) throws ConfigLoadException {
+		final ConfigPropertyFetcher fetcher = new ConfigPropertyFetcher(configFile, readableFileName);
 
-		ClientConfig config = new ClientConfig();
-		config.secret = fetcher.requireConfigProperty(String.class, "secret");
-		config.logLevel = fetcher.requireConfigProperty(LogLevel.class, "loggingLevel");
-		config.logOutput = fetcher.requireConfigProperty(LogOutput.class, "logOutput");
-		config.logFormat = fetcher.requireConfigProperty(LogFormat.class, "logFormat");
-
-		return config;
+		return ClientConfig.builder()
+			.secret(fetcher.requireConfigProperty(String.class, "secret"))
+			.logLevel(fetcher.requireConfigProperty(LogLevel.class, "loggingLevel"))
+			.logOutput(fetcher.requireConfigProperty(LogOutput.class, "logOutput"))
+			.logFormat(fetcher.requireConfigProperty(LogFormat.class, "logFormat"))
+			.build();
 	}
 
 }

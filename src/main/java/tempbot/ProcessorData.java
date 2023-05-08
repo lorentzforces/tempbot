@@ -2,8 +2,7 @@ package tempbot;
 
 import java.util.Set;
 import tempbot.engine.Dimension;
-import tempbot.engine.DimensionBuilder;
-import tempbot.engine.UnitBuilder;
+import tempbot.engine.Unit;
 
 public class ProcessorData {
 
@@ -30,171 +29,187 @@ public class ProcessorData {
 
 	public static Dimension
 	createTemperatureDimension() {
-		UnitBuilder celsius = new UnitBuilder()
-			.setFullName("degrees Celsius")
-			.setShortName("°C")
-			.setIsDefaultConversionSource(true)
-			.setIsDefaultConversionResult(true)
-			.addDetectableName("C")
-			.addDetectableName("c")
-			.addDetectableName("Celsius")
-			.addDetectableName("celsius")
-			.setConversionTo(x -> x - 273.15d)
-			.setConversionFrom(x -> x + 273.15d);
-		UnitBuilder fahrenheit = new UnitBuilder()
-			.setFullName("degrees Fahrenheit")
-			.setShortName("°F")
-			.setIsDefaultConversionSource(true)
-			.setIsDefaultConversionResult(true)
-			.addDetectableName("F")
-			.addDetectableName("f")
-			.addDetectableName("Fahrenheit")
-			.addDetectableName("fahrenheit")
-			.setConversionTo(x -> (x - 273.15d) * (9d/5d) + 32d)
-			.setConversionFrom(x -> (x - 32d) * (5d/9d) + 273.15d);
-		UnitBuilder kelvin = new UnitBuilder()
-			.setFullName("degrees Kelvin")
-			.setShortName("K")
+		final var celsius = Unit.builder()
+			.fullName("degrees Celsius")
+			.shortName("°C")
+			.defaultConversionSource(true)
+			.defaultConversionResult(true)
+			.detectableName("C")
+			.detectableName("c")
+			.detectableName("Celsius")
+			.detectableName("celsius")
+			.convertTo(x -> x - 273.15d)
+			.convertFrom(x -> x + 273.15d)
+			.build();
+		final var fahrenheit = Unit.builder()
+			.fullName("degrees Fahrenheit")
+			.shortName("°F")
+			.defaultConversionSource(true)
+			.defaultConversionResult(true)
+			.detectableName("F")
+			.detectableName("f")
+			.detectableName("Fahrenheit")
+			.detectableName("fahrenheit")
+			.convertTo(x -> (x - 273.15d) * (9d/5d) + 32d)
+			.convertFrom(x -> (x - 32d) * (5d/9d) + 273.15d)
+			.build();
+		final var kelvin = Unit.builder()
+			.fullName("degrees Kelvin")
+			.shortName("K")
 			// don't recognize lowercase k to avoid thousands (like "100k") being interpreted as
 			// temperatures
-			.addDetectableName("Kelvin")
-			.addDetectableName("kelvin")
-			.setConversionTo(x -> x)
-			.setConversionFrom(x -> x);
-		return new DimensionBuilder()
-			.setName("Temperature")
-			.addUnit(celsius)
-			.addUnit(fahrenheit)
-			.addUnit(kelvin)
-			.setMinValue(0d)
+			.detectableName("Kelvin")
+			.detectableName("kelvin")
+			.convertTo(x -> x)
+			.convertFrom(x -> x)
+			.build();
+		return Dimension.builder()
+			.name("Temperature")
+			.unit(celsius)
+			.unit(fahrenheit)
+			.unit(kelvin)
+			.minValue(0d)
 			.build();
 	}
 
 	public static Dimension
 	createSpeedDimension() {
-		UnitBuilder milesPerHour = new UnitBuilder()
-			.setFullName("miles per hour")
-			.setShortName("mph")
-			.setIsDefaultConversionResult(true)
-			.addDetectableName("mi/hr")
-			.setConversionTo(x -> (x / 0.44704d))
-			.setConversionFrom(x -> (x * 0.44704d));
-		UnitBuilder kilometersPerHour = new UnitBuilder()
-			.setFullName("kilometers per hour")
-			.setShortName("kph")
-			.setIsDefaultConversionResult(true)
-			.addDetectableName("km/hr")
-			.setConversionTo(x -> (x * 3.6d))
-			.setConversionFrom(x -> (x / 3.6d));
-		UnitBuilder metersPerSecond = new UnitBuilder()
-			.setFullName("meters per second")
-			.setShortName("m/s")
-			.setIsDefaultConversionResult(false)
-			.setConversionTo(x -> x)
-			.setConversionFrom(x -> x);
-		UnitBuilder feetPerSecond = new UnitBuilder()
-			.setFullName("feet per second")
-			.setShortName("fps")
-			.setIsDefaultConversionResult(false)
-			.addDetectableName("ft/s")
-			.setConversionTo(x -> (x / 0.3048d))
-			.setConversionFrom(x -> (x * 0.3048d));
-		UnitBuilder knots = new UnitBuilder()
-			.setFullName("nautical miles per hour")
-			.setShortName("knots")
-			.setConversionTo(x -> x / 0.51444d)
-			.setConversionFrom(x -> x * 0.51444d);
-		return new DimensionBuilder()
-			.setName("Speed")
-			.addUnit(milesPerHour)
-			.addUnit(kilometersPerHour)
-			.addUnit(metersPerSecond)
-			.addUnit(feetPerSecond)
-			.addUnit(knots)
-			.setMinValue(0d)
+		final var milesPerHour = Unit.builder()
+			.fullName("miles per hour")
+			.shortName("mph")
+			.defaultConversionResult(true)
+			.detectableName("mi/hr")
+			.convertTo(x -> (x / 0.44704d))
+			.convertFrom(x -> (x * 0.44704d))
+			.build();
+		final var kilometersPerHour = Unit.builder()
+			.fullName("kilometers per hour")
+			.shortName("kph")
+			.defaultConversionResult(true)
+			.detectableName("km/hr")
+			.convertTo(x -> (x * 3.6d))
+			.convertFrom(x -> (x / 3.6d))
+			.build();
+		final var metersPerSecond = Unit.builder()
+			.fullName("meters per second")
+			.shortName("m/s")
+			.defaultConversionResult(false)
+			.convertTo(x -> x)
+			.convertFrom(x -> x)
+			.build();
+		final var feetPerSecond = Unit.builder()
+			.fullName("feet per second")
+			.shortName("fps")
+			.defaultConversionResult(false)
+			.detectableName("ft/s")
+			.convertTo(x -> (x / 0.3048d))
+			.convertFrom(x -> (x * 0.3048d))
+			.build();
+		final var knots = Unit.builder()
+			.fullName("nautical miles per hour")
+			.shortName("knots")
+			.convertTo(x -> x / 0.51444d)
+			.convertFrom(x -> x * 0.51444d)
+			.build();
+		return Dimension.builder()
+			.name("Speed")
+			.unit(milesPerHour)
+			.unit(kilometersPerHour)
+			.unit(metersPerSecond)
+			.unit(feetPerSecond)
+			.unit(knots)
+			.minValue(0d)
 			.build();
 	}
 
 	public static Dimension
 	createBloodSugarDimension() {
-		UnitBuilder usUnits = new UnitBuilder()
-			.setFullName("milligrams per deciliter")
-			.setShortName("mg/dL")
-			.setIsDefaultConversionSource(true)
-			.setIsDefaultConversionResult(true)
-			.addDetectableName("mg/dl")
-			.setConversionTo(x -> (x * 18d))
-			.setConversionFrom(x -> (x / 18d));
-		UnitBuilder globalUnits = new UnitBuilder()
-			.setFullName("millimols per liter")
-			.setShortName("mmol/L")
-			.setIsDefaultConversionSource(true)
-			.setIsDefaultConversionResult(true)
-			.addDetectableName("mmol/l")
-			.setConversionTo(x -> x)
-			.setConversionFrom(x -> x);
-		return new DimensionBuilder()
-			.setName("Blood sugar")
-			.addUnit(usUnits)
-			.addUnit(globalUnits)
-			.setMinValue(0d)
+		final var usUnits = Unit.builder()
+			.fullName("milligrams per deciliter")
+			.shortName("mg/dL")
+			.defaultConversionSource(true)
+			.defaultConversionResult(true)
+			.detectableName("mg/dl")
+			.convertTo(x -> (x * 18d))
+			.convertFrom(x -> (x / 18d))
+			.build();
+		final var globalUnits = Unit.builder()
+			.fullName("millimols per liter")
+			.shortName("mmol/L")
+			.defaultConversionSource(true)
+			.defaultConversionResult(true)
+			.detectableName("mmol/l")
+			.convertTo(x -> x)
+			.convertFrom(x -> x)
+			.build();
+		return Dimension.builder()
+			.name("Blood sugar")
+			.unit(usUnits)
+			.unit(globalUnits)
+			.minValue(0d)
 			.build();
 	}
 
 	public static Dimension
 	createWeightDimension() {
-		UnitBuilder kilograms = new UnitBuilder()
-			.setFullName("kilograms")
-			.setShortName("kg")
-			.setIsDefaultConversionResult(true)
-			.setConversionTo(x -> x)
-			.setConversionFrom(x -> x);
-		UnitBuilder pounds = new UnitBuilder()
-			.setFullName("pounds")
-			.setShortName("lbs")
-			.setIsDefaultConversionResult(true)
-			.addDetectableName("lb")
-			.setConversionTo(x -> (x * 2.2046d))
-			.setConversionFrom(x -> (x / 2.2046d));
-		return new DimensionBuilder()
-			.setName("Weight")
-			.addUnit(kilograms)
-			.addUnit(pounds)
-			.setMinValue(0d)
+		final var kilograms = Unit.builder()
+			.fullName("kilograms")
+			.shortName("kg")
+			.defaultConversionResult(true)
+			.convertTo(x -> x)
+			.convertFrom(x -> x)
+			.build();
+		final var pounds = Unit.builder()
+			.fullName("pounds")
+			.shortName("lbs")
+			.defaultConversionResult(true)
+			.detectableName("lb")
+			.convertTo(x -> (x * 2.2046d))
+			.convertFrom(x -> (x / 2.2046d))
+			.build();
+		return Dimension.builder()
+			.name("Weight")
+			.unit(kilograms)
+			.unit(pounds)
+			.minValue(0d)
 			.build();
 	}
 
 	public static Dimension
 	createDistanceDimension() {
-		UnitBuilder meters = new UnitBuilder()
-			.setFullName("meters")
-			.setShortName("m")
-			.addDetectableName("metres")
-			.setConversionTo(x -> x)
-			.setConversionFrom(x -> x);
-		UnitBuilder kilometers = new UnitBuilder()
-			.setFullName("kilometers")
-			.setShortName("km")
-			.addDetectableName("kilometres")
-			.setConversionTo(x -> x / 1000d)
-			.setConversionFrom(x -> x * 1000d);
-		UnitBuilder miles = new UnitBuilder()
-			.setFullName("miles")
-			.setShortName("mi")
-			.setConversionTo(x -> x / 1609.34d)
-			.setConversionFrom(x -> x * 1609.34d);
-		UnitBuilder nauticalMiles = new UnitBuilder()
-			.setFullName("nautical miles")
-			.setShortName("nmi")
-			.setConversionTo(x -> x / 1852d)
-			.setConversionFrom(x -> x * 1852d);
-		return new DimensionBuilder()
-			.setName("Distance")
-			.addUnit(meters)
-			.addUnit(kilometers)
-			.addUnit(miles)
-			.addUnit(nauticalMiles)
-			.setMinValue(0d)
+		final var meters = Unit.builder()
+			.fullName("meters")
+			.shortName("m")
+			.detectableName("metres")
+			.convertTo(x -> x)
+			.convertFrom(x -> x)
+			.build();
+		final var kilometers = Unit.builder()
+			.fullName("kilometers")
+			.shortName("km")
+			.detectableName("kilometres")
+			.convertTo(x -> x / 1000d)
+			.convertFrom(x -> x * 1000d)
+			.build();
+		final var miles = Unit.builder()
+			.fullName("miles")
+			.shortName("mi")
+			.convertTo(x -> x / 1609.34d)
+			.convertFrom(x -> x * 1609.34d)
+			.build();
+		final var nauticalMiles = Unit.builder()
+			.fullName("nautical miles")
+			.shortName("nmi")
+			.convertTo(x -> x / 1852d)
+			.convertFrom(x -> x * 1852d)
+			.build();
+		return Dimension.builder()
+			.name("Distance")
+			.unit(meters)
+			.unit(kilometers)
+			.unit(miles)
+			.unit(nauticalMiles)
+			.minValue(0d)
 			.build();
 	}
 
