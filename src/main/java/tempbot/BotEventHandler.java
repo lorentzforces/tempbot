@@ -11,10 +11,13 @@ import org.tinylog.Logger;
 import tempbot.engine.UserInputProcessor;
 import tempbot.engine.ProcessingResult;
 import tempbot.engine.ProcessingResult.ConvertedValues;
+import tempbot.engine.ProcessingResult.ValueNotConverted;
 import tempbot.engine.ProcessingResult.ProcessingError;
 import tempbot.engine.ProcessingResult.ProcessingError.DimensionMismatch;
 import tempbot.engine.ProcessingResult.ProcessingError.SystemError;
 import tempbot.engine.ProcessingResult.ProcessingError.UnitOutOfRange;
+import tempbot.engine.ProcessingResult.ProcessingError.UnknownUnitType;
+import tempbot.engine.ProcessingResult.ProcessingError.UnparseableNumber;
 import tempbot.engine.UnitValue;
 
 import static tempbot.Constants.PRECISION;
@@ -73,12 +76,13 @@ public class BotEventHandler extends ListenerAdapter {
 
 	public void
 	displayHelp(final SlashCommandInteractionEvent commandEvent) {
+		// TODO: also provide specific-dimension help
 		commandEvent.reply(helpText).setEphemeral(true).queue();
 	}
 
 	public void
 	handleConversion(final SlashCommandInteractionEvent commandEvent) {
-
+		// TODO: wire this up to the processor
 	}
 
 	public void
@@ -132,12 +136,10 @@ public class BotEventHandler extends ListenerAdapter {
 			final var standardOutput = new StringBuilder();
 			final var errorOutput = new StringBuilder();
 
-			if (result instanceof final ConvertedValues conversions) {
-				formatResults(conversions, standardOutput);
-			} else if (result instanceof final ProcessingError error) {
-				formatError(error, errorOutput);
-			} else {
-				panicToStdErr("Attempted to format a result which was not a known result class.");
+			switch (result) {
+				case ConvertedValues vals -> formatResults(vals, standardOutput);
+				case ValueNotConverted c -> throw new RuntimeException();
+				case ProcessingError err -> formatError(err, errorOutput);
 			}
 
 			output.append(standardOutput);
@@ -169,29 +171,41 @@ public class BotEventHandler extends ListenerAdapter {
 
 	private void
 	formatError(final ProcessingError error, final StringBuilder output) {
-		if (error instanceof final UnitOutOfRange rangeError) {
-			addUnitValueString(rangeError.sourceValue(), output);
-			output.append(" is ");
-			output.append(switch (rangeError.limitType()) {
-				case MAXIMUM -> "greater than ";
-				case MINIMUM -> "less than ";
-			});
-			addUnitValueString(rangeError.rangeLimitingValue(), output);
-			output.append(", the ");
-			output.append(switch (rangeError.limitType()) {
-				case MAXIMUM -> "maximum";
-				case MINIMUM -> "minimum";
-			});
-			output.append(".");
-		} else if (error instanceof final DimensionMismatch dimensionError) {
-			output.append("Can't convert units from ")
-				.append(dimensionError.sourceDimension().getName())
-				.append(" to ")
-				.append(dimensionError.destinationDimension().getName())
-				.append(".");
-		} else if (error instanceof SystemError) {
-			// errors should be logged at the point of creation
-			output.append("A system error occurred while processing a unit conversion.");
+		switch (error) {
+			case UnitOutOfRange err -> {
+				addUnitValueString(err.sourceValue(), output);
+				output.append(" is ");
+				output.append(switch (err.limitType()) {
+					case MAXIMUM -> "greater than ";
+					case MINIMUM -> "less than ";
+				});
+				addUnitValueString(err.rangeLimitingValue(), output);
+				output.append(", the ");
+				output.append(switch (err.limitType()) {
+					case MAXIMUM -> "maximum";
+					case MINIMUM -> "minimum";
+				});
+				output.append(".");
+			}
+			case DimensionMismatch err -> {
+				output.append("Can't convert units from ")
+					.append(err.sourceDimension().getName())
+					.append(" to ")
+					.append(err.destinationDimension().getName())
+					.append(".");
+			}
+			case UnknownUnitType err -> {
+				output.append("Unknown unit type: ")
+					.append(err.badUnitString())
+					.append(".");
+			}
+			case UnparseableNumber err -> {
+				output.append("Could not get a numeric value from: ")
+					.append(err.badNumberString())
+					.append(".");
+			}
+			case SystemError sysError ->
+				output.append("A system error occurred while processing a unit conversion.");
 		}
 	}
 

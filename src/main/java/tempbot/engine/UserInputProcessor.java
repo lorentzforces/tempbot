@@ -10,12 +10,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.tinylog.Logger;
 import tempbot.engine.ProcessingResult.ParsedSourceValue;
 import tempbot.engine.ProcessingResult.ProcessingError;
 import tempbot.engine.ProcessingResult.ValueNotConverted;
+import tempbot.engine.ProcessingResult.ProcessingError.UnknownUnitType;
+import tempbot.engine.ProcessingResult.ProcessingError.UnparseableNumber;
 
 import static tempbot.Constants.MAX_CONVERSIONS;
 
@@ -62,72 +67,165 @@ public class UserInputProcessor {
 			+ RegexHelper.SOMETIMES_A_SPACE
 			+ RegexHelper.buildNamedGroup(
 				PATTERN_UNIT_LABEL_GROUP,
-				dimensionNames .stream().map(Pattern::quote).collect(Collectors.joining("|"))
+				dimensionNames.stream().map(Pattern::quote).collect(Collectors.joining("|"))
 			)
 			+ "\\b"; // terminating word boundary
 
 		return Pattern.compile(unitsRegex);
 	}
 
+	public ProcessingResult
+	processSpecificConversionRequest(
+		final String sourceValueString,
+		final String destinationUnitString
+	) {
+		final var sourceResult = extractSourceValue(sourceValueString);
+
+		if (sourceResult.error != null) {
+			return sourceResult.error;
+		}
+
+		final var sourceValue = sourceResult.parsedValue;
+		final var sourceDimension = dimensionsByUnitName.get(sourceValue.unit().getShortName());
+		final var destDimension = dimensionsByUnitName.get(destinationUnitString);
+
+		if (destDimension == null) {
+			return new ProcessingError.UnknownUnitType(destinationUnitString);
+		}
+		if (!destDimension.getName().equals(sourceDimension.getName())) {
+			return new ProcessingError.DimensionMismatch(
+				sourceValue,
+				sourceDimension,
+				destDimension
+			);
+		}
+
+		return destDimension.convertSpecificUnits(
+			sourceValue,
+			destDimension.getUnitByName(destinationUnitString)
+		);
+	}
+
 	public List<ProcessingResult>
 	processMessage(final String message) {
 		final var unitLabelMatcher = unitsPattern.matcher(message);
-		final var numericMatcher = DOUBLE_NUMBER_PATTERN.matcher(message);
 
 		final var results = new ArrayList<ProcessingResult>();
-		final var previousMatchEnd = 0;
+		var previousMatchEnd = 0;
 		while (unitLabelMatcher.find() && results.size() < MAX_CONVERSIONS) {
-			final var unitLabel = unitLabelMatcher.group(PATTERN_UNIT_LABEL_GROUP);
+			final var sourceResult =
+				extractSourceValue(message, previousMatchEnd, unitLabelMatcher.end());
+			previousMatchEnd = unitLabelMatcher.end();
 
-			// we add one since the unit label regex includes the last digit
-			final var numericalEnd = unitLabelMatcher.start() + 1;
-			numericMatcher.region(previousMatchEnd, numericalEnd);
+			// In "process everything in the message" mode, we don't care about most errors and
+			// just silently ignore them. If we see an unknown unit error at this point, there
+			// was a terrible error and we should log it.
+			if (sourceResult.error instanceof ProcessingError.UnknownUnitType err) {
+				logBadUnitLabel(err.badUnitString());
+			}
+			if (sourceResult.error != null) {
+				continue;
+			}
 
-			// if there isn't a valid double value immediately preceding, just keep going through
-			// the input message
-			if (numericMatcher.find()) {
-				final var valueString = numericMatcher.group();
+			final var sourceValue = sourceResult.parsedValue;
 
-				ProcessingResult result;
-				try {
-					final var doubleValue = Double.parseDouble(valueString);
-					// this is where we'll break out if there's something horribly wrong
+			final var valueAlreadyEncountered = results.stream()
+				.filter(priorResult -> priorResult instanceof ParsedSourceValue)
+				.map(typeCheckedValue ->
+					((ParsedSourceValue) typeCheckedValue).sourceValue())
+				.anyMatch(earlierValue -> earlierValue.equalsUnitValue(sourceValue));
+			if (valueAlreadyEncountered) {
+				continue;
+			}
 
-					final var sourceUnit =
-						dimensionsByUnitName
-						.get(unitLabel)
-						.getUnitByName(unitLabel);
-					final var sourceValue = new UnitValue(sourceUnit, doubleValue);
-
-					final var valueAlreadyEncountered = results.stream()
-						.filter(priorResult -> priorResult instanceof ParsedSourceValue)
-						.map(typeCheckedValue ->
-							((ParsedSourceValue) typeCheckedValue).sourceValue())
-						.anyMatch(earlierValue -> earlierValue.equalsUnitValue(sourceValue));
-
-					if (valueAlreadyEncountered) {
-						continue;
-					} else if (sourceUnit.isDefaultConversionSource()) {
-						final var dimension = dimensionsByUnitName.get(unitLabel);
-						result = dimension.convertUnit(sourceValue);
-					} else {
-						result = ValueNotConverted.builder().sourceValue(sourceValue).build();
-					}
-				} catch (final NumberFormatException e) {
-					Logger.error(e, String.format("""
-						Encountered a NumberFormatException when parsing a regex-matched Double \
-						value. This should never happen.
-						> Value String: %s""",
-						valueString
-					));
-					result = new ProcessingError.SystemError();
-				}
-
-				results.add(result);
+			if (sourceValue.unit().isDefaultConversionSource()) {
+				final var dimension = dimensionsByUnitName.get(sourceValue.unit().getShortName());
+				results.add(dimension.convertUnit(sourceValue));
+			} else {
+				results.add(ValueNotConverted.builder().sourceValue(sourceValue).build());
 			}
 		}
 
 		return results;
+	}
+
+	/**
+	 * Represents the result of an attempt to extract a source UnitValue from a string which
+	 * probably contains one. Consumers should check whether the error value is null before
+	 * accessing the parsed value.
+	 */
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+	private static class SourceValueResult {
+		public final UnitValue parsedValue;
+		public final ProcessingError error;
+
+		public static SourceValueResult goodValue(UnitValue parsedValue) {
+			return new SourceValueResult(parsedValue, null);
+		}
+
+		public static SourceValueResult error(ProcessingError error) {
+			return new SourceValueResult(null, error);
+		}
+	}
+
+	private SourceValueResult extractSourceValue(String sourceString) {
+		return extractSourceValue(sourceString, 0, sourceString.length());
+	}
+
+	private SourceValueResult extractSourceValue(String sourceString, int regionStart, int regionEnd) {
+		final var unitLabelMatcher = unitsPattern.matcher(sourceString);
+		unitLabelMatcher.region(regionStart, regionEnd);
+
+		final var foundUnit = unitLabelMatcher.find();
+		if (!foundUnit) {
+			return SourceValueResult.error(new ProcessingError.UnknownUnitType(sourceString));
+		}
+		final var unitLabel = unitLabelMatcher.group(PATTERN_UNIT_LABEL_GROUP);
+
+		final var numericMatcher = DOUBLE_NUMBER_PATTERN.matcher(sourceString);
+		// we add one since the unit label regex includes the last digit
+		final var numericalEnd = unitLabelMatcher.start() + 1;
+		numericMatcher.region(0, numericalEnd);
+
+		final var foundNumeric = numericMatcher.find();
+		if (!foundNumeric) {
+			return SourceValueResult.error(new ProcessingError.UnparseableNumber(
+				sourceString.substring(0, numericalEnd).trim()
+			));
+		}
+
+		final var valueString = numericMatcher.group();
+		double doubleValue;
+		try {
+			doubleValue = Double.parseDouble(valueString);
+		} catch (final NumberFormatException e) {
+			logBadNumberFormat(valueString, e);
+			return SourceValueResult.error(new ProcessingError.UnparseableNumber(valueString));
+		}
+
+		final var sourceUnit =
+			dimensionsByUnitName
+			.get(unitLabel)
+			.getUnitByName(unitLabel);
+		return SourceValueResult.goodValue(new UnitValue(sourceUnit, doubleValue));
+	}
+
+	private static void
+	logBadUnitLabel(String unitLabel) {
+		Logger.error(String.format("""
+			Could not find a valid unit label when parsing a string that originally matched the \
+			unit label matcher. This should never happen. String was: \"%s\"""",
+			unitLabel
+		));
+	}
+
+	private static void
+	logBadNumberFormat(String valueString, NumberFormatException e) {
+		Logger.error(e, String.format("""
+			Encountered a NumberFormatException when parsing a regex-matched Double \
+			value. This should never happen. Value string was: \"%s\"""",
+			valueString
+		));
 	}
 
 	private static class RegexHelper {

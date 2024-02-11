@@ -84,7 +84,10 @@ public class Dimension {
 	}
 
 	/**
-	 * Convert an input value with a given unit to a specific output unit.
+	 * Convert an input value with a given unit to a specific output unit. Callers should check
+	 * whether the dimension match for provided unites, because we can't access the other
+	 * dimension from here; callers can provide a better error message when the dimensions don't
+	 * match.
 	 */
 	public ProcessingResult
 	convertSpecificUnits(final UnitValue initialValue, final Unit destinationUnit) {
@@ -93,12 +96,12 @@ public class Dimension {
 			return maybeRangeError.orElseThrow();
 		}
 
-		// The caller should check whether the dimensions match for the provided units, because we
-		// can't access the other dimension from here. This is a sanity check to bail out if we
-		// messed that up.
-		final var unitsAreDifferentDimensions =
+		// This is a sanity check to bail out if this dimension doesn't have both units in the
+		// conversion.
+		final var unitsAreDifferentDimensions = !(
 			unitMapping.containsKey(initialValue.unit().getFullName())
-			&& unitMapping.containsKey(destinationUnit.getFullName());
+			&& unitMapping.containsKey(destinationUnit.getFullName())
+		);
 		if (unitsAreDifferentDimensions) {
 			Logger.error(String.format("""
 				Dimension %s did not contain %s and/or %s units when attempting to perform a \
@@ -107,6 +110,8 @@ public class Dimension {
 				initialValue.unit().getFullName(),
 				destinationUnit.getFullName()
 			));
+			// Return a system error because we shouldn't get to this point, and the caller can
+			// construct a DimensionMismatch result that provides better information.
 			return new ProcessingError.SystemError();
 		}
 

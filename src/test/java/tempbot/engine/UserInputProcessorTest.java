@@ -5,13 +5,16 @@ import org.junit.Before;
 import org.junit.Test;
 import tempbot.ProcessorData;
 import tempbot.engine.ProcessingResult.ConvertedValues;
+import tempbot.engine.ProcessingResult.ProcessingError.DimensionMismatch;
 import tempbot.engine.ProcessingResult.ProcessingError.UnitOutOfRange;
+import tempbot.engine.ProcessingResult.ProcessingError.UnknownUnitType;
 import tempbot.engine.ProcessingResult.ProcessingError.UnitOutOfRange.LimitType;
 import tempbot.engine.ProcessingResult.ValueNotConverted;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static tempbot.Constants.COMPARISON_EPSILON;
 
@@ -129,16 +132,6 @@ public class UserInputProcessorTest {
 		assertDoublesEqual(-36d, convertedValue);
 	}
 
-//	@Test
-//	public void
-//	conversionToBaseUnitIsCorrect() {
-//		var baseUnitResults = processor.processMessage("32F");
-//		assertThat(baseUnitResults, hasSize(1));
-//		var baseUnit = getConvertedValuesFromResult(baseUnitResults.get(0));
-//		var kelvin = getUnitValueFromResult(baseUnit, "degrees Kelvin");
-//		assertDoublesEqual(273.15d, kelvin);
-//	}
-
 	@Test
 	public void
 	multipleValuesAreConverted() {
@@ -172,10 +165,10 @@ public class UserInputProcessorTest {
 	@Test
 	public void
 	specificConversionSucceeds() {
-		final var results = processor.processMessage("5C to Kelvin");
-		assertThat(results, hasSize(1));
+		final var result = processor.processSpecificConversionRequest("5C", "Kelvin");
+
 		final var kelvin = getUnitValueFromResult(
-			getConvertedValuesFromResult(results.get(0)),
+			getConvertedValuesFromResult(result),
 			"degrees Kelvin"
 		);
 		assertDoublesEqual(278.15d, kelvin);
@@ -183,54 +176,37 @@ public class UserInputProcessorTest {
 
 	@Test
 	public void
-	specificConversionWorksOnNonDefaultUnits() {
-		final var specificResults = processor.processMessage("2K to C");
-		assertThat(specificResults, hasSize(1));
+	specificConversionBetweenDimensionsFails() {
+		final var result = processor.processSpecificConversionRequest("5C", "dummy");
+
+		assertThat(result, instanceOf(DimensionMismatch.class));
+		final var err = (DimensionMismatch) result;
+		assertThat(err.destinationDimension().getName(), is("DummyDimension"));
+		assertThat(err.sourceDimension().getName(), is("Temperature"));
+		assertThat(err.sourceValue().value(), is(5.0d));
+		assertThat(err.sourceValue().unit().getShortName(), is("°C"));
 	}
 
-//	@Test
-//	public void
-//	testSpecificConversionBetweenDimensionsFails() {
-//		List<ProcessingResult> results = processor.processMessage("5C to dummy", false);
-//
-//		assertEquals(1, results.size());
-//		ProcessingResult result = results.get(0);
-//		assertEquals(1, result.errors.size());
-//		Exception error = result.errors.get(0);
-//		assertEquals(MismatchedDimensionsException.class, error.getClass());
-//	}
-//
-//	@Test
-//	public void
-//	testSpecificAndGeneralConversionsBothWork() {
-//		List<ProcessingResult> results = processor.processMessage("0F 5C to Kelvin", false);
-//
-//		assertEquals(2, results.size());
-//
-//		ProcessingResult generalConversion = results.get(0);
-//		assertEquals(1, generalConversion.values.size());
-//		assertDoublesEqual(0d, generalConversion.sourceValue.getValue());
-//
-//		ProcessingResult specificConversion = results.get(1);
-//		assertEquals(1, specificConversion.values.size());
-//		assertDoublesEqual(
-//				278.15d,
-//				getUnitValueFromResult(specificConversion, "degrees Kelvin")
-//		);
-//	}
+	@Test
+	public void
+	specificConversionFailsForGarbageDestinationUnit() {
+		final var result = processor.processSpecificConversionRequest("5C", "asdf");
 
-//	@Test
-//	public void
-//	testMaxMinValuesAreRespectedWithSpecificConversions() {
-//		List<ProcessingResult> results =
-//				processor.processMessage("-20 K to Celsius", true);
-//
-//		assertEquals(1, results.size());
-//		ProcessingResult belowAbsoluteZero = results.get(0);
-//		assertEquals(1, belowAbsoluteZero.errors.size());
-//		Exception error = belowAbsoluteZero.errors.get(0);
-//		assertEquals(UnitRangeException.class, error.getClass());
-//	}
+		assertThat(result, instanceOf(UnknownUnitType.class));
+		final var err = (UnknownUnitType) result;
+		assertThat(err.badUnitString(), is("asdf"));
+	}
+
+	@Test
+	public void
+	maxAndMinValuesAreRespectedWithSpecificConversions() {
+		final var result = processor.processSpecificConversionRequest("-20 K", "Celsius");
+
+		assertThat(result, instanceOf(UnitOutOfRange.class));
+		final var err = (UnitOutOfRange) result;
+		assertThat(err.limitType(), is(UnitOutOfRange.LimitType.MINIMUM));
+		assertThat(err.rangeLimitingValue().value(), is(0d));
+	}
 
 	/**
 	 * Temperature is used as a reasonable representative use case.
