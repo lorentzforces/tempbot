@@ -12,7 +12,7 @@ This project uses hard tabs. [You can adjust the visual tab size in Github's web
 ### Requirements:
 
 - an internet connection to download dependencies (only on first build or when dependencies have changed)
-- Java `17` executables available to Gradle
+- Java `21` executables available to Gradle
 
 To build the project without running it, you can run the following command:
 ```

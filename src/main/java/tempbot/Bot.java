@@ -61,8 +61,12 @@ public class Bot {
 		jda.addEventListener(inputHandler);
 		Logger.info("Added raw message text handler");
 
-		// TODO: operationalize this a bit by updating global commands when in production mode, and
-		// only using guild commands when in testing mode
+		// TODO: Operationalize this a bit by updating global commands when in production mode, and
+		// only using guild commands when in testing mode.
+
+		// TODO: Change command registration to be bundles of capability instead of explicitly
+		// slash commands. This would cover, for example, a slash command and button event
+		// handlers to support interaction with rich output from those commands.
 		final var commands = inputHandler.getCommands();
 		jda.getGuildCache().stream().forEach(guild -> registerGuildCommands(guild, commands));
 	}
