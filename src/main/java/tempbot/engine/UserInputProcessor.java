@@ -7,11 +7,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -19,12 +20,11 @@ import org.tinylog.Logger;
 import tempbot.engine.ProcessingResult.ParsedSourceValue;
 import tempbot.engine.ProcessingResult.ProcessingError;
 import tempbot.engine.ProcessingResult.ValueNotConverted;
-import tempbot.engine.ProcessingResult.ProcessingError.UnknownUnitType;
-import tempbot.engine.ProcessingResult.ProcessingError.UnparseableNumber;
 
 import static tempbot.Constants.MAX_CONVERSIONS;
 
 public class UserInputProcessor {
+	private final Map<String, Dimension> dimensionsByNameLower;
 	private final Map<String, Dimension> dimensionsByUnitName = new HashMap<>();
 	private final Pattern unitsPattern;
 
@@ -39,13 +39,17 @@ public class UserInputProcessor {
 	public UserInputProcessor(
 		@NonNull final Set<Dimension> dimensions
 	) {
+		dimensionsByNameLower = dimensions.stream().collect(Collectors.toMap(
+			dimension -> dimension.getName().toLowerCase(),
+			Function.identity()
+		));
 		final var eagerDimensionStaging = new HashSet<String>();
 		final var nonEagerDimensionStaging = new HashSet<String>();
+
 		for (final Dimension dimension : dimensions) {
 			for (final String unitName : dimension.getUnitNames()) {
 				dimensionsByUnitName.put(unitName, dimension);
 			}
-
 
 			if (dimension.isHasEagerConversions()) {
 				eagerDimensionStaging.add(dimension.getName());
@@ -53,7 +57,6 @@ public class UserInputProcessor {
 				nonEagerDimensionStaging.add(dimension.getName());
 			}
 		}
-
 		eagerDimensions = Collections.unmodifiableSet(eagerDimensionStaging);
 		nonEagerDimensions = Collections.unmodifiableSet(nonEagerDimensionStaging);
 
@@ -104,6 +107,11 @@ public class UserInputProcessor {
 			sourceValue,
 			destDimension.getUnitByName(destinationUnitString)
 		);
+	}
+
+	public Optional<Dimension>
+	getDimensionByName(@NonNull String name) {
+		return Optional.ofNullable(dimensionsByNameLower.get(name.toLowerCase()));
 	}
 
 	public List<ProcessingResult>
@@ -168,11 +176,13 @@ public class UserInputProcessor {
 		}
 	}
 
-	private SourceValueResult extractSourceValue(String sourceString) {
+	private SourceValueResult
+	extractSourceValue(String sourceString) {
 		return extractSourceValue(sourceString, 0, sourceString.length());
 	}
 
-	private SourceValueResult extractSourceValue(String sourceString, int regionStart, int regionEnd) {
+	private SourceValueResult
+	extractSourceValue(String sourceString, int regionStart, int regionEnd) {
 		final var unitLabelMatcher = unitsPattern.matcher(sourceString);
 		unitLabelMatcher.region(regionStart, regionEnd);
 

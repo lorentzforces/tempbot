@@ -8,7 +8,7 @@ import lombok.NonNull;
 @Builder
 public record UnitValue(@NonNull Unit unit, double value) {
 
-	// NOTE: this is not transitive
+	// NOTE: this is not necessarily transitive because of fuzzy double equality
 	public boolean
 	equalsUnitValue(UnitValue that) {
 		return (

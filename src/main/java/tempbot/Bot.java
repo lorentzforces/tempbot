@@ -6,12 +6,17 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Collection;
+import java.util.stream.Collectors;
+import lombok.NonNull;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.JDA.Status;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.tinylog.Logger;
 import org.tinylog.configuration.Configuration;
+import tempbot.commands.SlashCommand;
 import tempbot.config.ClientConfig;
 import tempbot.config.ConfigLoadException;
 import tempbot.config.ConfigLoader;
@@ -24,7 +29,7 @@ import static tempbot.Util.panicToStdErr;
 public class Bot {
 
 	public static void
-	main(final String[] args) {
+	main(String[] args) {
 		final var config = loadClientConfig();
 		setLogSettings(config);
 
@@ -41,7 +46,7 @@ public class Bot {
 	}
 
 	private static void
-	awaitLoginAndRegisterHandlers(final ClientConfig config) throws InterruptedException {
+	awaitLoginAndRegisterHandlers(@NonNull ClientConfig config) throws InterruptedException {
 		final var jda = JDABuilder
 			.createDefault(config.secret())
 			.enableIntents(GatewayIntent.MESSAGE_CONTENT)
@@ -54,18 +59,32 @@ public class Bot {
 			new UserInputProcessor(ProcessorData.createAllDimensions())
 		);
 		jda.addEventListener(inputHandler);
+		Logger.info("Added raw message text handler");
 
 		// TODO: operationalize this a bit by updating global commands when in production mode, and
 		// only using guild commands when in testing mode
-		final var helpCommand =
-			Commands.slash(
-				"help",
-				"read help about TempBot or any of the things it can convert between"
-			);
+		final var commands = inputHandler.getCommands();
+		jda.getGuildCache().stream().forEach(guild -> registerGuildCommands(guild, commands));
+	}
 
+	private static void
+	registerGuildCommands(@NonNull Guild guild, @NonNull Collection<SlashCommand> commands) {
+		final var jdaCommands = commands.stream()
+			.peek(cmd -> Logger.info(() ->
+				String.format(
+					"Registering guild command -- guild [%s] \"%s\", command \"%s\"",
+					guild.getId(),
+					guild.getName(),
+					cmd.getName()
+				)
+			)).map(cmd -> {
+				return Commands.slash(
+					cmd.getName(),
+					cmd.getDescription()
+				).addOptions(cmd.getOptions());
+			}).collect(Collectors.toList());
 
-		// for now we're adding it as a command to all guilds
-		jda.getGuildCache().stream().forEach(guild -> guild.updateCommands().addCommands(helpCommand).queue());
+		guild.updateCommands().addCommands(jdaCommands).queue();
 	}
 
 	private static ClientConfig
@@ -92,11 +111,12 @@ public class Bot {
 	}
 
 	private static void
-	setLogSettings(final ClientConfig config) {
+	setLogSettings(@NonNull ClientConfig config) {
 		Configuration.replace(LogConfigurer.configureLogging(
 			config.logLevel(),
 			config.logOutput(),
 			config.logFormat()
 		));
 	}
+
 }

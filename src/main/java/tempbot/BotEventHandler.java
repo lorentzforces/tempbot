@@ -1,27 +1,22 @@
 package tempbot;
 
-import java.text.DecimalFormat;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.NonNull;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.tinylog.Logger;
-import tempbot.engine.UserInputProcessor;
+import tempbot.commands.ConvertCommand;
+import tempbot.commands.HelpCommand;
+import tempbot.commands.SlashCommand;
 import tempbot.engine.ProcessingResult;
-import tempbot.engine.ProcessingResult.ConvertedValues;
-import tempbot.engine.ProcessingResult.ValueNotConverted;
-import tempbot.engine.ProcessingResult.ProcessingError;
-import tempbot.engine.ProcessingResult.ProcessingError.DimensionMismatch;
-import tempbot.engine.ProcessingResult.ProcessingError.SystemError;
-import tempbot.engine.ProcessingResult.ProcessingError.UnitOutOfRange;
-import tempbot.engine.ProcessingResult.ProcessingError.UnknownUnitType;
-import tempbot.engine.ProcessingResult.ProcessingError.UnparseableNumber;
-import tempbot.engine.UnitValue;
-
-import static tempbot.Constants.PRECISION;
-import static tempbot.Util.panicToStdErr;
+import tempbot.engine.UserInputProcessor;
 
 /**
  * Interface responsible for translating Discord actions into processor operations
@@ -29,14 +24,25 @@ import static tempbot.Util.panicToStdErr;
 public class BotEventHandler extends ListenerAdapter {
 
 	private final UserInputProcessor processor;
-	private final DecimalFormat format;
-	private final String helpText;
+	private final Map<String, SlashCommand> commandMap;
 
 	public BotEventHandler(@NonNull final UserInputProcessor processor) {
 		this.processor = processor;
+		this.commandMap =
+			Stream.of(
+				new HelpCommand(processor),
+				new ConvertCommand(processor)
+			).collect(Collectors.toMap(
+				SlashCommand::getName,
+				Function.identity()
+			));
+	}
 
-		format = new DecimalFormat("###,###,###,###." + "#".repeat(PRECISION));
-		helpText = buildHelpText(processor);
+	public Collection<SlashCommand>
+	getCommands() {
+		// map this to a new collection since values() provides a collection backed by the map
+		// itself
+		return commandMap.values().stream().collect(Collectors.toList());
 	}
 
 	@Override
@@ -47,13 +53,14 @@ public class BotEventHandler extends ListenerAdapter {
 		}
 	}
 
+	// TODO: support autocompletion for obvious things like destination unit, dimension listing
+
 	@Override
 	public void
 	onSlashCommandInteraction(final SlashCommandInteractionEvent event) {
-		switch (event.getName()) {
-			case "help" -> displayHelp(event);
-			case "convert" -> handleConversion(event);
-			default -> handleUnknownEvent(event);
+		switch (commandMap.get(event.getName())) {
+			case null -> handleUnknownEvent(event);
+			case SlashCommand c -> c.handleCommandEvent(event);
 		}
 	}
 
@@ -67,22 +74,11 @@ public class BotEventHandler extends ListenerAdapter {
 
 		final List<ProcessingResult> results = processor.processMessage(messageContent);
 		final StringBuilder processingOutput = new StringBuilder();
-		formatProcessingResults(results, processingOutput);
+		DiscordFormatting.formatProcessingResults(results, processingOutput);
 
 		if (processingOutput.length() > 0) {
 			message.getChannel().sendMessage(processingOutput.toString()).queue();
 		}
-	}
-
-	public void
-	displayHelp(final SlashCommandInteractionEvent commandEvent) {
-		// TODO: also provide specific-dimension help
-		commandEvent.reply(helpText).setEphemeral(true).queue();
-	}
-
-	public void
-	handleConversion(final SlashCommandInteractionEvent commandEvent) {
-		// TODO: wire this up to the processor
 	}
 
 	public void
@@ -93,162 +89,11 @@ public class BotEventHandler extends ListenerAdapter {
 		));
 		commandEvent
 			.reply("""
-				Sorry! The system does not have a definition for the command you attempted to \
-				invoke. This error has been logged for the developers of this bot."""
-			).setEphemeral(true)
+				Sorry! Something went wrong. This error has been logged for the developers of this \
+				bot. \
+			""")
+			.setEphemeral(true)
 			.queue();
-	}
-
-//	private void
-//	createDimensionListingMessage(Dimension dimension, StringBuilder message) {
-//		message.append(DIMENSION_HELP_TEXT)
-//			.append("\n> ")
-//			.append(dimension.getUnits()
-//				.map(unit -> {
-//					return new StringBuilder()
-//						.append("**")
-//						.append(unit.getFullName())
-//						.append("** ")
-//						.append("(")
-//						.append(unit.getDetectableNames().stream()
-//							.collect(Collectors.joining(", "))
-//						).append(")");
-//				})
-//				.collect(Collectors.joining("\n> "))
-//			);
-//	}
-
-//	private void
-//	createGeneralHelpMessage(StringBuilder message) {
-//		message.append(HELP_TEXT)
-//			.append("\n")
-//			.append(DIMENSION_EXPLAIN_TEXT)
-//			.append("\n> ")
-//			.append(processor.getDimensions()
-//				.map(Dimension::getName)
-//				.collect(Collectors.joining("\n> "))
-//			);
-//	}
-
-	private void
-	formatProcessingResults(final List<ProcessingResult> results, final StringBuilder output) {
-		for (final ProcessingResult result : results) {
-			final var standardOutput = new StringBuilder();
-			final var errorOutput = new StringBuilder();
-
-			switch (result) {
-				case ConvertedValues vals -> formatResults(vals, standardOutput);
-				case ValueNotConverted c -> throw new RuntimeException();
-				case ProcessingError err -> formatError(err, errorOutput);
-			}
-
-			output.append(standardOutput);
-			output.append(errorOutput);
-			// trailing newline is trimmed by Discord
-			output.append("\n");
-		}
-	}
-
-	private void
-	formatResults(final ConvertedValues result, final StringBuilder output) {
-		if (result.values().size() > 0) {
-			addUnitValueString(result.sourceValue(), output);
-			output.append(" = ");
-
-			if (result.values().size() == 1) {
-				addUnitValueString(result.values().get(0), output);
-			}
-			else {
-				output.append("\n");
-				for (final UnitValue value : result.values()) {
-					output.append("> ");
-					addUnitValueString(value, output);
-					output.append("\n");
-				}
-			}
-		}
-	}
-
-	private void
-	formatError(final ProcessingError error, final StringBuilder output) {
-		switch (error) {
-			case UnitOutOfRange err -> {
-				addUnitValueString(err.sourceValue(), output);
-				output.append(" is ");
-				output.append(switch (err.limitType()) {
-					case MAXIMUM -> "greater than ";
-					case MINIMUM -> "less than ";
-				});
-				addUnitValueString(err.rangeLimitingValue(), output);
-				output.append(", the ");
-				output.append(switch (err.limitType()) {
-					case MAXIMUM -> "maximum";
-					case MINIMUM -> "minimum";
-				});
-				output.append(".");
-			}
-			case DimensionMismatch err -> {
-				output.append("Can't convert units from ")
-					.append(err.sourceDimension().getName())
-					.append(" to ")
-					.append(err.destinationDimension().getName())
-					.append(".");
-			}
-			case UnknownUnitType err -> {
-				output.append("Unknown unit type: ")
-					.append(err.badUnitString())
-					.append(".");
-			}
-			case UnparseableNumber err -> {
-				output.append("Could not get a numeric value from: ")
-					.append(err.badNumberString())
-					.append(".");
-			}
-			case SystemError sysError ->
-				output.append("A system error occurred while processing a unit conversion.");
-		}
-	}
-
-	private static String
-	buildHelpText(UserInputProcessor processor) {
-		final var helpText = new StringBuilder("""
-			TempBot is a unit-conversion bot. It can convert a variety of units to make your \
-			conversations easier with friends who might use different temperature units from you, \
-			or just satisfy your curiosity.
-
-			TempBot will automatically convert units of the following types if it sees them in a channel:
-			""");
-
-		processor.getEagerDimensions().stream().forEach(name -> {
-			helpText.append("- ")
-				.append(name)
-				.append("\n");
-		});
-
-		helpText.append("\n")
-			.append("TempBot can also convert units of the following types when asked:\n");
-
-		processor.getNonEagerDimensions().stream().forEach(name -> {
-			helpText.append("- ")
-				.append(name)
-				.append("\n");
-		});
-
-		helpText.append("\n")
-			.append("""
-				To see what units TempBot knows about for each type, invoke `/help` and include \
-				the name of one of these unit types.""");
-
-		return helpText.toString();
-	}
-
-	private void
-	addUnitValueString(final UnitValue value, final StringBuilder buffer) {
-		buffer.append("**")
-			.append(format.format(value.value()))
-			.append(" ")
-			.append(value.unit().getShortName())
-			.append("**");
 	}
 
 }
