@@ -5,6 +5,7 @@ import static tempbot.Constants.PRECISION;
 import java.text.DecimalFormat;
 import java.util.List;
 import lombok.NonNull;
+import net.dv8tion.jda.api.entities.Member;
 import tempbot.engine.ProcessingResult;
 import tempbot.engine.ProcessingResult.ConvertedValues;
 import tempbot.engine.ProcessingResult.ProcessingError;
@@ -115,5 +116,11 @@ public class DiscordFormatting {
 			.append(value.unit().getShortName())
 			.append("**");
 	}
+
+	public static String
+	appendMentionVia(@NonNull String messageContent, @NonNull Member mentionee) {
+		return String.format("%s\n_via %s_", messageContent, mentionee.getAsMention());
+	}
+
 
 }

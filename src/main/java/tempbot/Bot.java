@@ -12,7 +12,6 @@ import lombok.NonNull;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.JDA.Status;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.tinylog.Logger;
 import org.tinylog.configuration.Configuration;
@@ -59,7 +58,7 @@ public class Bot {
 			new UserInputProcessor(ProcessorData.createAllDimensions())
 		);
 		jda.addEventListener(inputHandler);
-		Logger.info("Added raw message text handler");
+		Logger.info("Added event listener");
 
 		// TODO: Operationalize this a bit by updating global commands when in production mode, and
 		// only using guild commands when in testing mode.
@@ -81,12 +80,8 @@ public class Bot {
 					guild.getName(),
 					cmd.getName()
 				)
-			)).map(cmd -> {
-				return Commands.slash(
-					cmd.getName(),
-					cmd.getDescription()
-				).addOptions(cmd.getOptions());
-			}).collect(Collectors.toList());
+			)).map(SlashCommand::getRegistrationObject)
+			.collect(Collectors.toList());
 
 		guild.updateCommands().addCommands(jdaCommands).queue();
 	}

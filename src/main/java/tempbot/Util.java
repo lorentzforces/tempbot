@@ -8,7 +8,6 @@ public final class Util {
 		// private constructor
 	}
 
-	// as with standard compare methods, returns -1
 	public static boolean doublesAreEqual(double a, double b) {
 		if (
 			Double.isNaN(a)

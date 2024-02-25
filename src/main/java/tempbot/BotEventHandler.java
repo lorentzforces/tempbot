@@ -9,9 +9,12 @@ import java.util.stream.Stream;
 import lombok.NonNull;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.tinylog.Logger;
+import tempbot.buttons.BotButton;
+import tempbot.buttons.ShowMessageButton;
 import tempbot.commands.ConvertCommand;
 import tempbot.commands.HelpCommand;
 import tempbot.commands.SlashCommand;
@@ -25,13 +28,22 @@ public class BotEventHandler extends ListenerAdapter {
 
 	private final UserInputProcessor processor;
 	private final Map<String, SlashCommand> commandMap;
+	private final Map<String, BotButton> buttonMap;
 
 	public BotEventHandler(@NonNull final UserInputProcessor processor) {
 		this.processor = processor;
+
+		final var showMessageButton = new ShowMessageButton();
+		this.buttonMap =
+			Stream.of(showMessageButton)
+			.collect(Collectors.toMap(
+				BotButton::getName,
+				Function.identity()
+			));
 		this.commandMap =
 			Stream.of(
 				new HelpCommand(processor),
-				new ConvertCommand(processor)
+				new ConvertCommand(processor, showMessageButton.getRegistrationObject())
 			).collect(Collectors.toMap(
 				SlashCommand::getName,
 				Function.identity()
@@ -47,7 +59,7 @@ public class BotEventHandler extends ListenerAdapter {
 
 	@Override
 	public void
-	onMessageReceived(final MessageReceivedEvent event) {
+	onMessageReceived(@NonNull MessageReceivedEvent event) {
 		if (!event.getAuthor().isBot()) {
 			handleMessage(event.getMessage());
 		}
@@ -57,15 +69,24 @@ public class BotEventHandler extends ListenerAdapter {
 
 	@Override
 	public void
-	onSlashCommandInteraction(final SlashCommandInteractionEvent event) {
+	onSlashCommandInteraction(@NonNull SlashCommandInteractionEvent event) {
 		switch (commandMap.get(event.getName())) {
-			case null -> handleUnknownEvent(event);
+			case null -> handleUnknownSlashEvent(event);
 			case SlashCommand c -> c.handleCommandEvent(event);
 		}
 	}
 
+	@Override
 	public void
-	handleMessage(final Message message) {
+	onButtonInteraction(@NonNull ButtonInteractionEvent event) {
+		switch (buttonMap.get(event.getComponentId())) {
+			case null -> handleUnknownButtonEvent(event);
+			case BotButton b -> b.handleButtonEvent(event);
+		}
+	}
+
+	public void
+	handleMessage(@NonNull Message message) {
 		final String messageContent = message.getContentStripped();
 		Logger.debug("Message handling: \"" + messageContent + "\"");
 		if (messageContent.length() == 0) {
@@ -81,19 +102,27 @@ public class BotEventHandler extends ListenerAdapter {
 		}
 	}
 
-	public void
-	handleUnknownEvent(final SlashCommandInteractionEvent commandEvent) {
+	private static final String GENERIC_ERROR_MESSAGE =
+		"⚠️ Sorry! Something went wrong. This error has been logged for the developers of this bot.";
+
+	private void
+	handleUnknownSlashEvent(@NonNull SlashCommandInteractionEvent commandEvent) {
 		Logger.error(String.format(
 			"A command was invoked that has no defined handler: %s",
 			commandEvent.getName()
 		));
-		commandEvent
-			.reply("""
-				Sorry! Something went wrong. This error has been logged for the developers of this \
-				bot. \
-			""")
-			.setEphemeral(true)
-			.queue();
+		commandEvent.reply(GENERIC_ERROR_MESSAGE).setEphemeral(true).queue();
+	}
+
+	private void
+	handleUnknownButtonEvent(@NonNull ButtonInteractionEvent buttonEvent) {
+		Logger.error(String.format(
+			"A button was invoked that has no defined handler: %s",
+			buttonEvent.getComponentId()
+		));
+		// clear any buttons off the triggering message
+		buttonEvent.deferEdit().setComponents().queue();
+		buttonEvent.reply(GENERIC_ERROR_MESSAGE).setEphemeral(true).queue();
 	}
 
 }

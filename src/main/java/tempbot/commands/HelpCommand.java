@@ -29,22 +29,26 @@ public class HelpCommand implements SlashCommand {
 	}
 
 	@Override
-	public String getName() {
+	public String
+	getName() {
 		return "help";
 	}
 
 	@Override
-	public String getDescription() {
+	public String
+	getDescription() {
 		return "read help about TempBot or any of the things it can convert between";
 	}
 
 	@Override
-	public List<OptionData> getOptions() {
+	public List<OptionData>
+	getOptions() {
 		return OPTIONS;
 	}
 
 	@Override
-	public void handleCommandEvent(@NonNull SlashCommandInteractionEvent event) {
+	public void
+	handleCommandEvent(@NonNull SlashCommandInteractionEvent event) {
 		event.reply("test");
 		event.reply(
 			switch (event.getOption("unit-type")) {
