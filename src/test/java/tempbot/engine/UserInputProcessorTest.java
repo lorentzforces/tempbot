@@ -78,17 +78,15 @@ public class UserInputProcessorTest {
 	@Test
 	public void
 	onlyDefaultSourcesAreConverted() {
-		final var conversions = processor.processMessage("32F 500K");
-		assertThat(conversions, hasSize(2));
+		final var conversions = processor.processMessage("32F 40mph");
+		assertThat(conversions, hasSize(1));
 
-		assertThat(
-			conversions.stream().filter(result -> result instanceof ConvertedValues).count(),
-			is(1L)
-		);
-		assertThat(
-			conversions.stream().filter(result -> result instanceof ValueNotConverted).count(),
-			is(1L)
-		);
+		conversions.stream()
+			.filter(result -> result instanceof ConvertedValues)
+			.findAny()
+			.orElseThrow(() -> new AssertionError(
+				"Expected only converted values in general message processing output"
+			));
 	}
 
 	@Test

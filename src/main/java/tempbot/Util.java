@@ -8,7 +8,8 @@ public final class Util {
 		// private constructor
 	}
 
-	public static boolean doublesAreEqual(double a, double b) {
+	public static boolean
+	doublesAreEqual(double a, double b) {
 		if (
 			Double.isNaN(a)
 			|| Double.isNaN(b)

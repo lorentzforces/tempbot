@@ -19,6 +19,7 @@ import tempbot.commands.ConvertCommand;
 import tempbot.commands.HelpCommand;
 import tempbot.commands.SlashCommand;
 import tempbot.engine.ProcessingResult;
+import tempbot.engine.ProcessingResult.ValueNotConverted;
 import tempbot.engine.UserInputProcessor;
 
 /**
@@ -121,8 +122,9 @@ public class BotEventHandler extends ListenerAdapter {
 			buttonEvent.getComponentId()
 		));
 		// clear any buttons off the triggering message
-		buttonEvent.deferEdit().setComponents().queue();
-		buttonEvent.reply(GENERIC_ERROR_MESSAGE).setEphemeral(true).queue();
+		buttonEvent.deferEdit().setComponents()
+			.and(buttonEvent.reply(GENERIC_ERROR_MESSAGE).setEphemeral(true))
+			.queue();
 	}
 
 }

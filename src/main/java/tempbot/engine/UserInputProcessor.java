@@ -149,8 +149,6 @@ public class UserInputProcessor {
 			if (sourceValue.unit().isDefaultConversionSource()) {
 				final var dimension = dimensionsByUnitName.get(sourceValue.unit().getShortName());
 				results.add(dimension.convertUnit(sourceValue));
-			} else {
-				results.add(ValueNotConverted.builder().sourceValue(sourceValue).build());
 			}
 		}
 
