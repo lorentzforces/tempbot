@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.tinylog.Logger;
 import tempbot.engine.ProcessingResult.ParsedSourceValue;
 import tempbot.engine.ProcessingResult.ProcessingError;
-import tempbot.engine.ProcessingResult.ValueNotConverted;
 
 import static tempbot.Constants.MAX_CONVERSIONS;
 
@@ -33,6 +32,7 @@ public class UserInputProcessor {
 	@Getter
 	private final Set<String> nonEagerDimensions;
 
+	private static final String DOUBLE_VALUE_GROUP = "value";
 	private static final Pattern DOUBLE_NUMBER_PATTERN = RegexHelper.buildDoubleNumberPattern();
 	private static final String PATTERN_UNIT_LABEL_GROUP = "unitName";
 
@@ -202,7 +202,7 @@ public class UserInputProcessor {
 			));
 		}
 
-		final var valueString = numericMatcher.group();
+		final var valueString = numericMatcher.group(DOUBLE_VALUE_GROUP);
 		double doubleValue;
 		try {
 			doubleValue = Double.parseDouble(valueString);
@@ -260,6 +260,9 @@ public class UserInputProcessor {
 		 * Our implementation adds a line-end anchor ("$") to the end of the pattern to match
 		 * against the end of the region we specify. Our implementation ALSO does not consider
 		 * a trailing decimal point to be valid (in other words, we accept "100" but not "100.").
+		 * <br><br>
+		 * We also only match against numbers which are preceded by a very specific set of leading
+		 * special characters, or whitespace, or the beginning of the region.
 		 */
 		public static Pattern
 		buildDoubleNumberPattern() {
@@ -285,8 +288,13 @@ public class UserInputProcessor {
 				+ leadingDecimalPoint
 				+ ")"
 				+ "$";
+			final var valueGroup = buildNamedGroup(DOUBLE_VALUE_GROUP, doubleRegex);
 
-			return Pattern.compile(doubleRegex);
+			final var validLeadingPunc = Pattern.quote("{}()[]<>\"`'|");
+			final var validLeadingChars = "(\\A|\\s|[" + validLeadingPunc + "])";
+			final var patternString = validLeadingChars + valueGroup;
+
+			return Pattern.compile(patternString);
 		}
 	}
 

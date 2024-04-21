@@ -1,6 +1,8 @@
 package tempbot.engine;
 
+import java.util.ArrayList;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import tempbot.ProcessorData;
@@ -9,7 +11,6 @@ import tempbot.engine.ProcessingResult.ProcessingError.DimensionMismatch;
 import tempbot.engine.ProcessingResult.ProcessingError.UnitOutOfRange;
 import tempbot.engine.ProcessingResult.ProcessingError.UnknownUnitType;
 import tempbot.engine.ProcessingResult.ProcessingError.UnitOutOfRange.LimitType;
-import tempbot.engine.ProcessingResult.ValueNotConverted;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
@@ -204,6 +205,58 @@ public class UserInputProcessorTest {
 		final var err = (UnitOutOfRange) result;
 		assertThat(err.limitType(), is(UnitOutOfRange.LimitType.MINIMUM));
 		assertThat(err.rangeLimitingValue().value(), is(0d));
+	}
+
+	@Test
+	public void
+	parensAndBracesAllowConversion() {
+		final var allowedSpecialChars = "\"()[]{}'`<>|";
+
+		final var missedChars = new ArrayList<Character>();
+		allowedSpecialChars.chars().forEach(ch -> {
+			final var testString = String.format("%c32F", ch);
+			final var results = processor.processMessage(testString);
+
+			final var value = results.stream()
+				.filter(result -> result instanceof ConvertedValues)
+				.map(result -> (ConvertedValues) result)
+				.findAny();
+
+			if (value.isPresent()) {
+				final var realVal = value.orElseThrow();
+				try {
+					assertDoublesEqual(32d, realVal.sourceValue().value());
+				} catch (AssertionError e) {
+					System.out.println(realVal);
+					throw new AssertionError(
+						String.format(
+							"Invalid value parsed when prefixed with this special char: %c",
+							ch
+						),
+						e
+					);
+				}
+			} else {
+				missedChars.add((char) ch);
+			}
+		});
+
+		if (missedChars.size() > 0) {
+			throw new AssertionError(String.format(
+				"Valid values were not converted when prefixed with these special characters: %s",
+				missedChars.stream().map(ch -> ch.toString()).collect(Collectors.joining())
+			));
+		}
+	}
+
+	@Test
+	public void
+	preceedingSpecialCharsPreventConversion() {
+		final var specialCharResults = processor.processMessage("20F %21F $22F %-30F %2F");
+		assertThat(specialCharResults, hasSize(1));
+
+		final var plainResult = getConvertedValuesFromResult(specialCharResults.get(0));
+		assertDoublesEqual(20d, plainResult.sourceValue().value());
 	}
 
 	/**
