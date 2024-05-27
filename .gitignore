@@ -11,8 +11,8 @@ modules
 out
 tempbot.jar
 
--- config file contains secrets
+# config file contains secrets
 client.yml
 
--- log file
+# log file
 tempbot.log
