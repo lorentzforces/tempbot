@@ -18,13 +18,13 @@ def lombokVersion = "org.projectlombok:lombok:1.18.30"
 dependencies {
 	compileOnly(lombokVersion)
 	annotationProcessor(lombokVersion)
-	implementation("net.dv8tion:JDA:5.0.0-beta.2") {
+	implementation("net.dv8tion:JDA:5.0.1") {
 		exclude module: 'opus-java'
 	}
-	implementation("org.snakeyaml:snakeyaml-engine:2.3+")
-	implementation("org.tinylog:tinylog-api:2.3.+")
-	implementation("org.tinylog:tinylog-impl:2.3.+")
-	implementation("org.tinylog:slf4j-tinylog:2.3.+")
+	implementation("org.snakeyaml:snakeyaml-engine:2.7+")
+	implementation("org.tinylog:tinylog-api:2.7.+")
+	implementation("org.tinylog:tinylog-impl:2.7.+")
+	implementation("org.tinylog:slf4j-tinylog:2.7.+")
 
 	// TODO: update to junit jupiter (v5)
 	testImplementation("junit:junit-dep:4.11")
