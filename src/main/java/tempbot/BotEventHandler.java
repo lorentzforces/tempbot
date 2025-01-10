@@ -55,7 +55,7 @@ public class BotEventHandler extends ListenerAdapter {
 	getCommands() {
 		// map this to a new collection since values() provides a collection backed by the map
 		// itself
-		return commandMap.values().stream().collect(Collectors.toList());
+		return commandMap.values().stream().toList();
 	}
 
 	@Override

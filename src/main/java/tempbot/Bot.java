@@ -81,7 +81,7 @@ public class Bot {
 					cmd.getName()
 				)
 			)).map(SlashCommand::getRegistrationObject)
-			.collect(Collectors.toList());
+			.toList();
 
 		guild.updateCommands().addCommands(jdaCommands).queue();
 	}
