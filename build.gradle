@@ -6,8 +6,9 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'application'
 
-// this var for application plugin run task
-mainClassName = "tempbot.Bot"
+application {
+	mainClass = "tempbot.Bot"
+}
 
 repositories {
 	mavenCentral()
@@ -18,7 +19,7 @@ def lombokVersion = "org.projectlombok:lombok:1.18.30"
 dependencies {
 	compileOnly(lombokVersion)
 	annotationProcessor(lombokVersion)
-	implementation("net.dv8tion:JDA:5.0.1") {
+	implementation("net.dv8tion:JDA:5.2.2") {
 		exclude module: 'opus-java'
 	}
 	implementation("org.snakeyaml:snakeyaml-engine:2.8+")
@@ -63,7 +64,7 @@ jar {
 	destinationDirectory = file("$rootDir")
 	duplicatesStrategy = DuplicatesStrategy.INCLUDE
 	manifest {
-		attributes "Main-Class": mainClassName
+		attributes "Main-Class": application.mainClass
 		attributes "Multi-Release": true
 	}
 
