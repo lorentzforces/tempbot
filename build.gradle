@@ -21,7 +21,7 @@ dependencies {
 	implementation("net.dv8tion:JDA:5.0.1") {
 		exclude module: 'opus-java'
 	}
-	implementation("org.snakeyaml:snakeyaml-engine:2.7+")
+	implementation("org.snakeyaml:snakeyaml-engine:2.8+")
 	implementation("org.tinylog:tinylog-api:2.7.+")
 	implementation("org.tinylog:tinylog-impl:2.7.+")
 	implementation("org.tinylog:slf4j-tinylog:2.7.+")
@@ -34,8 +34,8 @@ dependencies {
 }
 
 compileJava {
-	sourceCompatibility = 21
-	targetCompatibility = 21
+	sourceCompatibility = 23
+	targetCompatibility = 23
 }
 
 test {
