@@ -6,16 +6,12 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Collection;
-import java.util.stream.Collectors;
 import lombok.NonNull;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.JDA.Status;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.tinylog.Logger;
 import org.tinylog.configuration.Configuration;
-import tempbot.commands.SlashCommand;
 import tempbot.config.ClientConfig;
 import tempbot.config.ConfigLoadException;
 import tempbot.config.ConfigLoader;
@@ -54,36 +50,16 @@ public class Bot {
 		jda.awaitStatus(Status.CONNECTED);
 		Logger.info("Connected, initializing message handlers");
 
-		final var inputHandler = new BotEventHandler(
+		final var eventHandler = new BotEventHandler(
 			new UserInputProcessor(ProcessorData.createAllDimensions())
 		);
-		jda.addEventListener(inputHandler);
+		jda.addEventListener(eventHandler);
 		Logger.info("Added event listener");
 
 		// TODO: Operationalize this a bit by updating global commands when in production mode, and
 		// only using guild commands when in testing mode.
 
-		// TODO: Change command registration to be bundles of capability instead of explicitly
-		// slash commands. This would cover, for example, a slash command and button event
-		// handlers to support interaction with rich output from those commands.
-		final var commands = inputHandler.getCommands();
-		jda.getGuildCache().stream().forEach(guild -> registerGuildCommands(guild, commands));
-	}
-
-	private static void
-	registerGuildCommands(@NonNull Guild guild, @NonNull Collection<SlashCommand> commands) {
-		final var jdaCommands = commands.stream()
-			.peek(cmd -> Logger.info(() ->
-				String.format(
-					"Registering guild command -- guild [%s] \"%s\", command \"%s\"",
-					guild.getId(),
-					guild.getName(),
-					cmd.getName()
-				)
-			)).map(SlashCommand::getRegistrationObject)
-			.toList();
-
-		guild.updateCommands().addCommands(jdaCommands).queue();
+		jda.getGuildCache().stream().forEach(guild -> eventHandler.registerGuildCommands(guild));
 	}
 
 	private static ClientConfig
@@ -97,6 +73,7 @@ public class Bot {
 				Files.newInputStream(configFilePath, StandardOpenOption.READ);
 
 			result = ConfigLoader.loadConfigurationFromFile(clientConfigFile, CONFIG_FILE_NAME);
+			result = ConfigLoader.applyEnvVarsToConfig(result);
 		}
 		catch (final IOException e) {
 			panicToStdErr(e.getMessage(), e);

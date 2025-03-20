@@ -1,13 +1,15 @@
 package tempbot;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -19,7 +21,6 @@ import tempbot.commands.ConvertCommand;
 import tempbot.commands.HelpCommand;
 import tempbot.commands.SlashCommand;
 import tempbot.engine.ProcessingResult;
-import tempbot.engine.ProcessingResult.ValueNotConverted;
 import tempbot.engine.UserInputProcessor;
 
 /**
@@ -49,13 +50,6 @@ public class BotEventHandler extends ListenerAdapter {
 				SlashCommand::getName,
 				Function.identity()
 			));
-	}
-
-	public Collection<SlashCommand>
-	getCommands() {
-		// map this to a new collection since values() provides a collection backed by the map
-		// itself
-		return commandMap.values().stream().toList();
 	}
 
 	@Override
@@ -125,6 +119,41 @@ public class BotEventHandler extends ListenerAdapter {
 		buttonEvent.deferEdit().setComponents()
 			.and(buttonEvent.reply(GENERIC_ERROR_MESSAGE).setEphemeral(true))
 			.queue();
+	}
+
+	@Override
+	public void
+	onGuildJoin(@NonNull GuildJoinEvent event) {
+		final var guild = event.getGuild();
+		Logger.info(() ->
+			String.format("New guild joined: [%s] \"%s\"", guild.getId(), guild.getName())
+		);
+		registerGuildCommands(event.getGuild());
+	}
+
+	public void
+	registerGuildCommands(@NonNull Guild guild) {
+		final var jdaCommands = commandMap.values().stream()
+			.peek(cmd -> Logger.info(() ->
+				String.format(
+					"Registering guild command -- guild [%s] \"%s\", command \"%s\"",
+					guild.getId(),
+					guild.getName(),
+					cmd.getName()
+				)
+			)).map(SlashCommand::getRegistrationObject)
+			.toList();
+		guild.updateCommands().addCommands(jdaCommands).queue();
+	}
+
+	public void
+	registerGlobalCommands(@NonNull JDA jda) {
+		final var jdaCommands = commandMap.values().stream()
+			.peek(cmd -> Logger.info(() ->
+				String.format("Registering global command -- command \"%s\"", cmd.getName())
+			)).map(SlashCommand::getRegistrationObject)
+			.toList();
+		jda.updateCommands().addCommands(jdaCommands).queue();
 	}
 
 }

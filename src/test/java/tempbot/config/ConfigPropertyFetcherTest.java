@@ -22,7 +22,7 @@ public class ConfigPropertyFetcherTest {
 				Thread.currentThread()
 				.getContextClassLoader()
 				.getResourceAsStream(TEST_PROPERTY_FILE);
-		configLoader = new ConfigPropertyFetcher(testConfigFileStream, TEST_PROPERTY_FILE);
+		configLoader = new ConfigPropertyFetcher(testConfigFileStream);
 	}
 
 	@Test

@@ -8,7 +8,6 @@ import org.snakeyaml.engine.v2.api.LoadSettings;
 
 class ConfigPropertyFetcher {
 
-	private final String readableFileIdentifier;
 	private final Map<String, String> rawConfigProperties;
 
 	/**
@@ -19,12 +18,11 @@ class ConfigPropertyFetcher {
 	 */
 	@SuppressWarnings("unchecked")
 	protected
-	ConfigPropertyFetcher(final InputStream clientConfigFile, final String readableFileIdentifier) {
+	ConfigPropertyFetcher(final InputStream clientConfigFile) {
 		final var yamlLoader = new Load(
 			LoadSettings.builder().setLabel("tempbot configuration file").build()
 		);
 
-		this.readableFileIdentifier = readableFileIdentifier;
 		rawConfigProperties =
 			(Map<String, String>) yamlLoader.loadFromInputStream(clientConfigFile);
 	}
@@ -47,6 +45,22 @@ class ConfigPropertyFetcher {
 		}
 	}
 
+	public static <T> Optional<T> fetchConfigEnvVar(
+		final Class<T> type,
+		final String name
+	) throws ConfigLoadException {
+		final var rawValue = System.getenv(name);
+
+		if (rawValue == null) {
+			return Optional.empty();
+		}
+		else {
+			return type.isEnum()
+				? parseRawEnumProperty(rawValue, type)
+				: parseRawNonEnumProperty(rawValue, type);
+		}
+	}
+
 	public <T> T
 	requireConfigProperty(
 		final Class<T> type,
@@ -54,13 +68,16 @@ class ConfigPropertyFetcher {
 	) throws ConfigLoadException {
 		return fetchConfigProperty(type, name).orElseThrow(() ->
 			new ConfigLoadException(String.format(
-				"Required property not found: expected property \"%s\" in configuration %s",
-				name,
-				readableFileIdentifier
-			)));
+				"Required property not found: expected property \"%s\"",
+				name
+			))
+		);
 	}
 
-	// TODO: figure out what to do if we're ever not getting Strings out of the yaml loader
+	/**
+	 * This assumes that what we're getting out of the yaml loader are Strings. Weird behavior may
+	 * ensue if that ever becomes untrue.
+	 */
 	private Optional<String>
 	fetchRawProperty(
 		final String name
@@ -70,7 +87,7 @@ class ConfigPropertyFetcher {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> Optional<T>
+	private static <T> Optional<T>
 	parseRawEnumProperty(
 		final Object rawProperty,
 		final Class<T> type
@@ -82,11 +99,9 @@ class ConfigPropertyFetcher {
 		}
 		catch (final ClassCastException e) {
 			throw new ConfigLoadException(String.format(
-				"Property type mismatch: found [%s], expected a String representing a [%s] "
-					+ "in configuration %s",
+				"Property type mismatch: found [%s], expected a String representing a [%s]",
 				rawProperty.getClass().getCanonicalName(),
-				type.getCanonicalName(),
-				readableFileIdentifier
+				type.getCanonicalName()
 			));
 		}
 
@@ -97,11 +112,9 @@ class ConfigPropertyFetcher {
 		}
 		catch (final IllegalArgumentException e) {
 			throw new ConfigLoadException(String.format(
-				"Invalid property enum value: \"%s\" is not a valid value for property \"%s\" "
-					+ "in configuration %s",
+				"Invalid property enum value: \"%s\" is not a valid value for property \"%s\"",
 				stringValue,
-				type.getCanonicalName(),
-				readableFileIdentifier
+				type.getCanonicalName()
 			));
 		}
 
@@ -109,7 +122,7 @@ class ConfigPropertyFetcher {
 		return Optional.of(result);
 	}
 
-	private <T> Optional<T>
+	private static <T> Optional<T>
 	parseRawNonEnumProperty(
 		final Object rawProperty,
 		final Class<T> type
@@ -120,11 +133,9 @@ class ConfigPropertyFetcher {
 		}
 		catch (final ClassCastException e) {
 			throw new ConfigLoadException(String.format(
-				"Property type mismatch: found [%s], expected a String representing a [%s] "
-					+ "in configuration %s",
+				"Property type mismatch: found [%s], expected a String representing a [%s]",
 				rawProperty.getClass().getCanonicalName(),
-				type.getCanonicalName(),
-				readableFileIdentifier
+				type.getCanonicalName()
 			));
 		}
 
