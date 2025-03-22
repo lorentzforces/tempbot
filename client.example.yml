@@ -1,5 +1,6 @@
 secret: "=== BOT SECRET HERE ==="
 
-loggingLevel: "INFO"
-logOutput: "CONSOLE"
-logFormat: "DEV"
+loggingLevel: INFO
+logOutput: CONSOLE
+logFormat: DEV
+commandScope: GUILD

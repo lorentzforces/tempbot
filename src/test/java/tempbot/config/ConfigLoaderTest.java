@@ -3,6 +3,7 @@ package tempbot.config;
 import java.io.InputStream;
 import org.junit.Before;
 import org.junit.Test;
+import tempbot.Constants.CommandScope;
 import tempbot.Constants.LogFormat;
 import tempbot.Constants.LogOutput;
 import tempbot.Constants.LogLevel;
@@ -35,6 +36,7 @@ ConfigLoaderTest {
 		assertThat(clientConfig.logLevel(), is(LogLevel.DEBUG));
 		assertThat(clientConfig.logOutput(), is(LogOutput.CONSOLE_AND_FILE));
 		assertThat(clientConfig.logFormat(), is(LogFormat.DEV));
+		assertThat(clientConfig.commandScope(), is(CommandScope.GUILD));
 	}
 
 }

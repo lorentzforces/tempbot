@@ -2,6 +2,7 @@ package tempbot.config;
 
 import lombok.Builder;
 import lombok.NonNull;
+import tempbot.Constants.CommandScope;
 import tempbot.Constants.LogFormat;
 import tempbot.Constants.LogLevel;
 import tempbot.Constants.LogOutput;
@@ -11,5 +12,6 @@ public record ClientConfig(
 	@NonNull String secret,
 	@NonNull LogLevel logLevel,
 	@NonNull LogOutput logOutput,
-	@NonNull LogFormat logFormat
+	@NonNull LogFormat logFormat,
+	@NonNull CommandScope commandScope
 ){}

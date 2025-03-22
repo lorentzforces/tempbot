@@ -19,6 +19,10 @@ public final class Constants {
 		CONSOLE, FILE, CONSOLE_AND_FILE
 	}
 
+	public enum CommandScope {
+		GUILD, GLOBAL
+	}
+
 	public static final String LOG_FILE_NAME = "tempbot.log";
 
 	public enum LogFormat {

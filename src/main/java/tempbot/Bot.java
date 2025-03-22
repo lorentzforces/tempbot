@@ -56,10 +56,19 @@ public class Bot {
 		jda.addEventListener(eventHandler);
 		Logger.info("Added event listener");
 
-		// TODO: Operationalize this a bit by updating global commands when in production mode, and
-		// only using guild commands when in testing mode.
+		switch (config.commandScope()) {
+		case GLOBAL: {
+			eventHandler.registerGlobalCommands(jda);
+			// clear guild commands
+			jda.getGuildCache().stream().forEach(guild -> guild.updateCommands().queue());
+		} break;
+		case GUILD: {
+			jda.getGuildCache().stream().forEach(guild -> eventHandler.registerGuildCommands(guild));
+			// clear global commands
+			jda.updateCommands().queue();
+		} break;
+		}
 
-		jda.getGuildCache().stream().forEach(guild -> eventHandler.registerGuildCommands(guild));
 	}
 
 	private static ClientConfig
