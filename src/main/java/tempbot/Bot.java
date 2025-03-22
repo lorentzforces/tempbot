@@ -51,7 +51,8 @@ public class Bot {
 		Logger.info("Connected, initializing message handlers");
 
 		final var eventHandler = new BotEventHandler(
-			new UserInputProcessor(ProcessorData.createAllDimensions())
+			new UserInputProcessor(ProcessorData.createAllDimensions()),
+			config.commandScope()
 		);
 		jda.addEventListener(eventHandler);
 		Logger.info("Added event listener");

@@ -10,11 +10,13 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.tinylog.Logger;
+import tempbot.Constants.CommandScope;
 import tempbot.buttons.BotButton;
 import tempbot.buttons.ShowMessageButton;
 import tempbot.commands.ConvertCommand;
@@ -31,9 +33,14 @@ public class BotEventHandler extends ListenerAdapter {
 	private final UserInputProcessor processor;
 	private final Map<String, SlashCommand> commandMap;
 	private final Map<String, BotButton> buttonMap;
+	private final CommandScope commandScope;
 
-	public BotEventHandler(@NonNull final UserInputProcessor processor) {
+	public BotEventHandler(
+		@NonNull final UserInputProcessor processor,
+		@NonNull final CommandScope commandScope
+	) {
 		this.processor = processor;
+		this.commandScope = commandScope;
 
 		final var showMessageButton = new ShowMessageButton();
 		this.buttonMap =
@@ -123,12 +130,22 @@ public class BotEventHandler extends ListenerAdapter {
 
 	@Override
 	public void
+	onGuildLeave(@NonNull GuildLeaveEvent event) {
+		final var guild = event.getGuild();
+		Logger.info(() -> String.format("Guild left: [%s] \"%s\"", guild.getId(), guild.getName()));
+	}
+
+	@Override
+	public void
 	onGuildJoin(@NonNull GuildJoinEvent event) {
 		final var guild = event.getGuild();
 		Logger.info(() ->
 			String.format("New guild joined: [%s] \"%s\"", guild.getId(), guild.getName())
 		);
-		registerGuildCommands(event.getGuild());
+
+		if (commandScope == CommandScope.GUILD) {
+			registerGuildCommands(event.getGuild());
+		}
 	}
 
 	public void
