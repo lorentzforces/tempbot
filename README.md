@@ -34,6 +34,8 @@ Because of how Gradle incremental builds work, this will first compile any chang
 
 At the most basic level, running the project requires running `java -jar <path-to-output-jar>` in a directory with a valid `client.yml` file. All configuration is contained within `client.yml`; there is no need to set any environment variables or system properties.
 
+Most configuration can be overridden with environment variables. Check the `ConfigLoader` class for details.
+
 [An example client.yml is provided in the root directory of this project.](./client.example.yml) You will need to fill in the relevant fields with a valid `secret` value for a valid Discord application. [Discord's application dashboard can be found here.](https://discord.com/developers/applications)
 
 ## Running Tests
