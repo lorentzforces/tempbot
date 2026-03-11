@@ -2,10 +2,11 @@ package tempbot.commands;
 
 import java.util.List;
 import lombok.NonNull;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import tempbot.DiscordFormatting;
 import tempbot.engine.UserInputProcessor;
 
@@ -64,7 +65,7 @@ public class ConvertCommand implements SlashCommand {
 		final var resultMessage = new StringBuilder();
 		DiscordFormatting.formatProcessingResults(List.of(result), resultMessage);
 
-		event.reply(resultMessage.toString()).addActionRow(showMessageButton).setEphemeral(true).queue();
+		event.reply(resultMessage.toString()).addComponents(ActionRow.of(showMessageButton)).setEphemeral(true).queue();
 	}
 
 }

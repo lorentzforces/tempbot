@@ -14,15 +14,16 @@ repositories {
 	mavenCentral()
 }
 
-def lombokVersion = "org.projectlombok:lombok:1.18.30"
+def lombokVersion = "org.projectlombok:lombok:1.18.42"
 
 dependencies {
 	compileOnly(lombokVersion)
 	annotationProcessor(lombokVersion)
-	implementation("net.dv8tion:JDA:5.2.2") {
+	implementation("net.dv8tion:JDA:6.3.1") {
 		exclude module: 'opus-java'
+		exclude module: 'tink'
 	}
-	implementation("org.snakeyaml:snakeyaml-engine:2.8+")
+	implementation("org.snakeyaml:snakeyaml-engine:2.9+")
 	implementation("org.tinylog:tinylog-api:2.7.+")
 	implementation("org.tinylog:tinylog-impl:2.7.+")
 	implementation("org.tinylog:slf4j-tinylog:2.7.+")
